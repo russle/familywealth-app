@@ -6,12 +6,11 @@
     <title>MyWealth - 家庭資產管家</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
+    <!-- Chart.js & Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Chart.js Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/2.2.1/chartjs-plugin-annotation.min.js"></script>
-    <!-- PapaParse -->
+    <!-- PapaParse (CSV處理) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -21,75 +20,19 @@
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
         .font-poppins { font-family: 'Poppins', sans-serif; }
-        
-        /* 玻璃擬態導航 */
-        .glass-nav {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-        }
-        
-        /* 活潑卡片特效 */
-        .lively-card {
-            background: white;
-            border-radius: 1.5rem;
-            border: 1px solid #f1f5f9;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .lively-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            border-color: #e2e8f0;
-        }
-
-        /* 輸入框美化 */
-        .input-lively {
-            width: 100%;
-            border: 2px solid #f1f5f9;
-            border-radius: 1rem;
-            padding: 0.6rem 1rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #334155;
-            transition: all 0.2s;
-            background-color: #f8fafc;
-        }
-        .input-lively:focus {
-            outline: none;
-            background-color: white;
-            border-color: #818cf8;
-            box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.1);
-        }
-        .input-lively:disabled {
-            background-color: #f1f5f9;
-            color: #94a3b8;
-            cursor: not-allowed;
-        }
-        
-        /* 隱私模式模糊效果 */
-        body.privacy-mode .privacy-val {
-            filter: blur(8px);
-            opacity: 0.6;
-            user-select: none;
-            transition: all 0.3s ease;
-        }
-
-        /* 登入遮罩 */
-        #login-overlay {
-            position: fixed; inset: 0; z-index: 100;
-            background: rgba(255, 255, 255, 0.98);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
-
-        /* 隱藏滾動條 */
+        .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(226, 232, 240, 0.8); }
+        .lively-card { background: white; border-radius: 1.5rem; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; }
+        .lively-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border-color: #e2e8f0; }
+        .input-lively { width: 100%; border: 2px solid #f1f5f9; border-radius: 1rem; padding: 0.6rem 1rem; font-weight: 600; color: #334155; transition: all 0.2s; background-color: #f8fafc; }
+        .input-lively:focus { outline: none; background-color: white; border-color: #818cf8; box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.1); }
+        body.privacy-mode .privacy-val { filter: blur(8px); opacity: 0.6; user-select: none; transition: all 0.3s ease; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
-        
         .animate-enter { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
         @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        #login-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(255,255,255,0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden bg-slate-50">
@@ -97,9 +40,7 @@
     <!-- Login Overlay -->
     <div id="login-overlay">
         <div class="text-center mb-8 animate-enter">
-            <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center text-white text-4xl shadow-xl mx-auto mb-4 shadow-indigo-500/30">
-                <i class="fa-solid fa-shield-cat"></i>
-            </div>
+            <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center text-white text-4xl shadow-xl mx-auto mb-4 shadow-indigo-500/30"><i class="fa-solid fa-shield-cat"></i></div>
             <h1 class="text-3xl font-bold text-slate-800 mb-2">MyWealth</h1>
             <p class="text-slate-500">家庭資產管家 (Firebase版)</p>
         </div>
@@ -168,9 +109,6 @@
                 <p class="mt-6 text-slate-500 font-bold tracking-wide animate-pulse">正在連線至 Firebase...</p>
             </div>
 
-            <!-- Error -->
-            <div id="error-message" class="hidden animate-enter bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-xl shadow-sm"><p class="text-sm text-rose-700 font-bold" id="error-text"></p></div>
-
             <!-- Overview View -->
             <div id="view-overview" class="hidden space-y-6 animate-enter">
                 <!-- 1. KPI Cards -->
@@ -210,7 +148,7 @@
                     <div class="lively-card p-6 bg-gradient-to-r from-slate-800 to-indigo-900 text-white relative overflow-hidden border-0 shadow-xl shadow-indigo-900/20">
                         <div class="relative z-10">
                             <div class="flex justify-between items-end mb-3">
-                                <div><h3 class="text-indigo-200 text-xs font-bold uppercase tracking-widest mb-1">FIRE 倒數鐘</h3><div id="fire-prediction" class="text-slate-300 text-sm font-medium">計算中...</div></div>
+                                <div><h3 class="text-indigo-200 text-xs font-bold uppercase tracking-widest mb-1">FIRE 財務自由倒數鐘</h3><div id="fire-prediction" class="text-slate-300 text-sm font-medium">計算中...</div></div>
                                 <div class="text-right"><span class="text-3xl font-bold font-poppins tracking-tight" id="fire-percent">0%</span><div class="text-[10px] text-indigo-300 font-medium privacy-val" id="fire-goal-text">目標: ---</div></div>
                             </div>
                             <div class="w-full bg-black/30 rounded-full h-4 p-1 backdrop-blur-sm border border-white/5"><div id="fire-bar" class="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 shadow-[0_0_15px_rgba(52,211,153,0.5)] transition-all duration-1000 relative overflow-hidden" style="width: 0%"></div></div>
@@ -219,7 +157,7 @@
                     <div class="lively-card p-6 bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-100 relative overflow-hidden flex flex-col justify-center">
                         <div class="relative z-10 flex flex-col gap-4">
                             <div class="flex justify-between items-start">
-                                <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white flex-shrink-0 flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-100"><i class="fa-solid fa-bullseye text-xl"></i></div><div><h3 class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-0.5" id="goal-year-title">年度目標</h3><div class="flex items-baseline gap-2"><span class="text-xl font-bold font-poppins text-emerald-700 privacy-val" id="val-year-goal">---</span><span class="text-[10px] text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full font-medium">預期: <span id="val-expected-return">--%</span></span></div></div></div>
+                                <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white flex-shrink-0 flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-100"><i class="fa-solid fa-bullseye text-xl"></i></div><div><h3 class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-0.5" id="goal-year-title">本年度目標</h3><div class="flex items-baseline gap-2"><span class="text-xl font-bold font-poppins text-emerald-700 privacy-val" id="val-year-goal">---</span><span class="text-[10px] text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full font-medium">預期: <span id="val-expected-return">--%</span></span></div></div></div>
                                 <div class="text-right"><p class="text-xs text-emerald-600 font-bold uppercase mb-0.5">距離</p><span class="text-lg font-bold font-poppins text-emerald-700 privacy-val" id="val-goal-diff">---</span></div>
                             </div>
                             <div class="w-full"><div class="flex justify-between text-xs font-bold text-emerald-700 mb-1.5"><span>達成進度</span><span id="val-goal-percent">0%</span></div><div class="w-full bg-white rounded-full h-3 overflow-hidden shadow-inner border border-emerald-100/50"><div id="bar-goal-progress" class="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-1000 relative" style="width: 0%"></div></div></div>
@@ -243,7 +181,7 @@
                 <div class="lively-card overflow-hidden flex flex-col">
                     <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                         <h3 class="font-bold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> 歷史紀錄</h3>
-                        <button onclick="window.openModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-slate-200 transition-all flex items-center gap-2"><i class="fa-solid fa-plus"></i> 新增</button>
+                        <button onclick="window.openModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg transition-all flex items-center gap-2"><i class="fa-solid fa-plus"></i> 新增</button>
                     </div>
                     <div class="overflow-x-auto flex-grow"><table class="min-w-full divide-y divide-slate-100"><thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold tracking-wider"><tr><th class="px-6 py-4 text-left">日期</th><th class="px-6 py-4 text-left">成員</th><th class="px-6 py-4 text-right">總資產</th><th class="px-6 py-4 text-right text-indigo-500">成本</th><th class="px-6 py-4 text-center">總YTD</th><th class="px-6 py-4 text-center">投資YTD</th><th class="px-6 py-4 text-left">備註</th></tr></thead><tbody class="bg-white divide-y divide-slate-50 text-sm font-medium" id="table-body"></tbody></table></div>
                     <div class="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center"><span class="text-xs text-slate-500 font-bold" id="pagination-info">Page 1</span><div class="flex gap-2"><button onclick="window.changePage(-1)" id="btn-prev" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold hover:bg-slate-50 disabled:opacity-50 transition-colors">Prev</button><button onclick="window.changePage(1)" id="btn-next" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold hover:bg-slate-50 disabled:opacity-50 transition-colors">Next</button></div></div>
@@ -305,7 +243,7 @@
 
     <!-- Firebase SDK -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
@@ -527,6 +465,41 @@
             });
         }
 
+        // --- CSV Import ---
+        document.getElementById('csv-file-input').addEventListener('change', handleFileSelect, false);
+        function handleFileSelect(evt) {
+            const file = evt.target.files[0];
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: async function(results) {
+                    const data = results.data;
+                    const uid = auth.currentUser.uid;
+                    const batchPromises = [];
+                    for (let row of data) {
+                         let newRec = {
+                            date: row['date'] || row['日期'],
+                            owner: row['owner'] || '本人',
+                            cash_tdcc: cleanNum(row['cash_tdcc'] || row['現金-集保加總']),
+                            cash_cathay: cleanNum(row['cash_cathay'] || row['現金-國泰(一般戶+外幣折台)']),
+                            cash_bot: cleanNum(row['cash_bot'] || row['現金-台銀']),
+                            funds_tdcc: cleanNum(row['funds_tdcc'] || row['基金-集保']),
+                            tw_tdcc: cleanNum(row['tw_tdcc'] || row['台股-集保']),
+                            tw_lending: cleanNum(row['tw_lending'] || row['台股-出借']),
+                            us_cathay: cleanNum(row['us_cathay'] || row['美股-國泰']),
+                            us_schwab: cleanNum(row['us_schwab'] || row['美股-嘉信']),
+                            crypto: cleanNum(row['crypto'] || row['虛擬貨幣-幣安+Kraken']),
+                            us_rate: cleanNum(row['us_rate'] || row['美金匯率']),
+                            note: row['note'] || row['備註'] || ''
+                        };
+                        batchPromises.push(addDoc(collection(db, "users", uid, "records"), newRec));
+                    }
+                    await Promise.all(batchPromises);
+                    alert("匯入成功！");
+                    document.getElementById('import-section').classList.add('hidden');
+                }
+            });
+        }
         function cleanNum(val) { if(!val) return 0; return parseFloat(String(val).replace(/,/g, '').replace(/"/g, '')) || 0; }
 
         async function initApp(uid) {
@@ -589,6 +562,16 @@
             if(rawSettings.currentAge) document.getElementById('retire-age').value = rawSettings.currentAge;
             window.calcRetirement();
         }
+        
+        // ★★★ ADDED MISSING FUNCTION HERE ★★★
+        function processSingleMemberData(records, initInvest, initCash, monthly) {
+            if(records.length === 0) return;
+            const startDate = new Date(records[0].date);
+            records.forEach(r => { 
+                Object.assign(r, calculateDerivedData(r, startDate, initInvest, initCash, monthly)); 
+            });
+        }
+        
         // ... other render/calc functions ...
         // Note: All logic is bundled. 
         // calculateYTD, aggregateRecordsByDate, processSingleMemberData, calculateDerivedData, renderOverview, updateAnnualGoal, renderFireProgressBar, renderTable, renderCharts
