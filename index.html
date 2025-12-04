@@ -4,13 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyWealth - 家庭資產管家</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/2.2.1/chartjs-plugin-annotation.min.js"></script>
+    <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
         .font-poppins { font-family: 'Poppins', sans-serif; }
@@ -25,23 +31,31 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
         .animate-enter { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
         #login-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(255,255,255,0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden bg-slate-50">
 
+    <!-- Login Screen -->
     <div id="login-overlay">
         <div class="text-center mb-8 animate-enter">
             <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center text-white text-4xl shadow-xl mx-auto mb-4 shadow-indigo-500/30"><i class="fa-solid fa-shield-cat"></i></div>
             <h1 class="text-3xl font-bold text-slate-800 mb-2">MyWealth</h1>
-            <p class="text-slate-500">家庭資產管家 (Firebase版)</p>
+            <p class="text-slate-500">家庭資產管家 (v3.0)</p>
         </div>
         <div class="space-y-4 w-full max-w-xs animate-enter" style="animation-delay: 0.1s">
-             <button onclick="window.loginWithGoogle()" class="w-full bg-white border border-slate-200 px-6 py-3 rounded-xl font-bold text-slate-700 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all flex items-center justify-center gap-3"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5"> Google 登入</button>
-             <div id="login-status" class="text-xs text-center text-red-500 font-mono break-words px-2"></div>
+             <button onclick="window.loginWithGoogle()" class="w-full bg-white border border-slate-200 px-6 py-3 rounded-xl font-bold text-slate-700 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all flex items-center justify-center gap-3">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5"> Google 登入
+            </button>
+             <div id="config-status" class="text-xs text-center font-mono bg-slate-100 p-2 rounded text-slate-500">
+                 正在檢查設定...
+             </div>
+             <div id="login-error" class="text-xs text-center text-red-500 font-bold hidden"></div>
         </div>
     </div>
 
+    <!-- Navbar -->
     <header class="glass-nav z-30 sticky top-0 hidden" id="app-header">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row justify-between md:h-18 py-3 md:py-0 gap-3 md:gap-0 items-center">
@@ -74,26 +88,26 @@
 
     <main id="app-main" class="flex-grow overflow-y-auto custom-scrollbar p-4 sm:p-6 relative hidden">
         <div class="max-w-7xl mx-auto space-y-8 pb-12">
-            <!-- Import -->
+            
+            <!-- Import Section -->
             <div id="import-section" class="hidden bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-xl mb-6 shadow-sm animate-enter">
                 <div class="flex items-start gap-4">
                     <div class="p-3 bg-blue-100 rounded-full text-blue-600"><i class="fa-solid fa-file-csv text-xl"></i></div>
                     <div class="flex-grow">
                         <h3 class="font-bold text-blue-800 text-lg mb-1">初始化資料庫</h3>
-                        <p class="text-sm text-blue-600 mb-4">檢測到您的資料庫為空。請選擇您的 <strong>Records.csv</strong> 檔案以匯入舊資料。</p>
+                        <p class="text-sm text-blue-600 mb-4">檢測到您的資料庫為空。請選擇 <strong>Records.csv</strong> 以匯入舊資料。</p>
                         <input type="file" id="csv-file-input" accept=".csv" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"/>
                     </div>
                 </div>
             </div>
-            <!-- Loader -->
+
+            <!-- Loading -->
             <div id="initial-loader" class="flex flex-col items-center justify-center h-[60vh]">
                 <div class="relative w-20 h-20"><div class="absolute inset-0 border-4 border-indigo-100 rounded-full animate-ping"></div><div class="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>
                 <p class="mt-6 text-slate-500 font-bold tracking-wide animate-pulse">正在連線至 Firebase...</p>
             </div>
-            <!-- Error -->
-            <div id="error-message" class="hidden animate-enter bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-xl shadow-sm"><p class="text-sm text-rose-700 font-bold" id="error-text"></p></div>
 
-            <!-- Overview -->
+            <!-- Overview View -->
             <div id="view-overview" class="hidden space-y-6 animate-enter">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div class="lively-card p-6 relative overflow-hidden group md:col-span-2">
@@ -126,7 +140,7 @@
                     <div class="lively-card p-6 bg-gradient-to-r from-slate-800 to-indigo-900 text-white relative overflow-hidden border-0 shadow-xl shadow-indigo-900/20">
                         <div class="relative z-10">
                             <div class="flex justify-between items-end mb-3">
-                                <div><h3 class="text-indigo-200 text-xs font-bold uppercase tracking-widest mb-1">FIRE 財務自由倒數鐘</h3><div id="fire-prediction" class="text-slate-300 text-sm font-medium">計算中...</div></div>
+                                <div><h3 class="text-indigo-200 text-xs font-bold uppercase tracking-widest mb-1">FIRE 倒數鐘</h3><div id="fire-prediction" class="text-slate-300 text-sm font-medium">計算中...</div></div>
                                 <div class="text-right"><span class="text-3xl font-bold font-poppins tracking-tight" id="fire-percent">0%</span><div class="text-[10px] text-indigo-300 font-medium privacy-val" id="fire-goal-text">目標: ---</div></div>
                             </div>
                             <div class="w-full bg-black/30 rounded-full h-4 p-1 backdrop-blur-sm border border-white/5"><div id="fire-bar" class="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 shadow-[0_0_15px_rgba(52,211,153,0.5)] transition-all duration-1000 relative overflow-hidden" style="width: 0%"></div></div>
@@ -157,10 +171,10 @@
                 <div class="lively-card overflow-hidden flex flex-col">
                     <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                         <h3 class="font-bold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> 歷史紀錄</h3>
-                        <button onclick="window.openModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg transition-all flex items-center gap-2"><i class="fa-solid fa-plus"></i> 新增</button>
+                        <button onclick="window.openModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg transition-all flex items-center gap-2 transform hover:scale-105"><i class="fa-solid fa-plus"></i> 新增紀錄</button>
                     </div>
                     <div class="overflow-x-auto flex-grow"><table class="min-w-full divide-y divide-slate-100"><thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold tracking-wider"><tr><th class="px-6 py-4 text-left">日期</th><th class="px-6 py-4 text-left">成員</th><th class="px-6 py-4 text-right">總資產</th><th class="px-6 py-4 text-right text-indigo-500">成本</th><th class="px-6 py-4 text-center">總YTD</th><th class="px-6 py-4 text-center">投資YTD</th><th class="px-6 py-4 text-left">備註</th></tr></thead><tbody class="bg-white divide-y divide-slate-50 text-sm font-medium" id="table-body"></tbody></table></div>
-                    <div class="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center"><span class="text-xs text-slate-500 font-bold" id="pagination-info">Page 1</span><div class="flex gap-2"><button onclick="window.changePage(-1)" id="btn-prev" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold hover:bg-slate-50 disabled:opacity-50">Prev</button><button onclick="window.changePage(1)" id="btn-next" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold hover:bg-slate-50 disabled:opacity-50">Next</button></div></div>
+                    <div class="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center"><span class="text-xs text-slate-500 font-bold" id="pagination-info">Page 1</span><div class="flex gap-2"><button onclick="window.changePage(-1)" id="btn-prev" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold hover:bg-slate-50 disabled:opacity-50 transition-colors">Prev</button><button onclick="window.changePage(1)" id="btn-next" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold hover:bg-slate-50 disabled:opacity-50 transition-colors">Next</button></div></div>
                 </div>
             </div>
 
@@ -192,6 +206,7 @@
         </div>
     </main>
 
+    <!-- Modal Form -->
     <div id="modal-add" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="window.closeModal()"></div>
         <div class="flex items-center justify-center min-h-screen p-4">
@@ -218,10 +233,11 @@
 
     <!-- Firebase SDK -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
+        // ★★★ 請在此填入您的 Firebase Config (務必確認 projectId 正確) ★★★
   const firebaseConfig = {
     apiKey: "AIzaSyAgeGiG1hXEHFo33jehxPO7tODCX5v_esk",
     authDomain: "familywealth-3f7f9.firebaseapp.com",
@@ -233,64 +249,148 @@
 
         let app, db, auth, provider;
         try {
+            // Basic Config Check
+            if (firebaseConfig.apiKey.includes("YOUR_API_KEY")) {
+                throw new Error("請填入真實的 Firebase Config！");
+            }
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
             provider = new GoogleAuthProvider();
+            document.getElementById('config-status').textContent = "Firebase SDK 初始化成功";
+            document.getElementById('config-status').classList.replace('text-slate-500', 'text-green-600');
         } catch (e) {
             console.error("Firebase Init Error:", e);
-            document.getElementById('login-status').textContent = "Firebase Config Error";
+            document.getElementById('login-status').textContent = e.message;
+            document.getElementById('config-status').textContent = "設定檔錯誤";
+            document.getElementById('config-status').classList.replace('text-slate-500', 'text-red-600');
         }
 
+        // Global Variables
         let rawRecords = [], filteredRecords = [], familyMembers = ["本人", "大女兒", "小女兒"], memberSettings = {}, charts = {}, currentPage = 1, isPrivacy = false;
         const ITEMS_PER_PAGE = 12;
         let rawSettings = { 
-            retirementGoal: 20000000, expectedReturn: 0.08, defaultExchangeRate: 31, 
+            retirementGoal: 20000000, expectedReturn: 0.08, defaultExchangeRate: 31.5, 
             useAutoRate: false, currentAge: 43, inflationRate: 2,
             familyMembers: "本人,大女兒,小女兒",
-            initialCashCost: "1500000, 10000, 10000",
-            initialInvestCost: "4000000, 50000, 50000",
-            monthlyContribution: "30000, 3000, 3000",
+            initialCashCost: "670000, 200000, 100000",
+            initialInvestCost: "1830000, 455173, 162000",
+            monthlyContribution: "36000, 5000, 10000",
             retirementAge: "60, 60, 60",
             lifeExpectancy: "90, 90, 90"
         };
 
+        // --- Auth ---
         window.loginWithGoogle = () => {
-            if(!auth) return alert("Firebase not ready");
+            if(!auth) return alert("Firebase 未正確初始化");
             signInWithPopup(auth, provider).catch(error => {
                 console.error("Login failed", error);
-                document.getElementById('login-status').textContent = "登入失敗: " + error.message;
+                const status = document.getElementById('login-error');
+                status.textContent = `登入失敗: ${error.code} - ${error.message}`;
+                status.classList.remove('hidden');
+                if(error.code === 'auth/unauthorized-domain') {
+                    alert("請至 Firebase Console > Authentication > Settings > Authorized domains 新增目前網址！");
+                }
             });
         };
 
         window.logout = () => signOut(auth).then(() => location.reload());
 
-        window.togglePrivacy = () => {
-            isPrivacy = !isPrivacy;
-            document.body.classList.toggle('privacy-mode', isPrivacy);
-            const iconClass = isPrivacy ? "fa-eye-slash" : "fa-eye";
-            document.getElementById('privacy-icon-desktop').className = `fa-solid ${iconClass}`;
-            document.getElementById('privacy-icon-mobile').className = `fa-solid ${iconClass}`;
-        };
-
-        window.openModal = () => { document.getElementById('modal-add').classList.remove('hidden'); document.getElementById('inp-date').valueAsDate = new Date(); };
-        window.closeModal = () => { document.getElementById('modal-add').classList.add('hidden'); };
-        
-        window.switchTab = (t) => {
-             ['overview','retirement'].forEach(x=>{
-                const el = document.getElementById('view-'+x);
-                if(el) el.classList.toggle('hidden', x!==t);
-                const btn = document.getElementById('tab-'+x);
-                if(btn) btn.className = x===t ? "px-4 py-1.5 rounded-lg text-sm font-bold bg-white text-indigo-600 shadow-sm" : "px-4 py-1.5 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700";
+        if(auth) {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    document.getElementById('login-overlay').classList.add('hidden');
+                    document.getElementById('app-header').classList.remove('hidden');
+                    document.getElementById('app-main').classList.remove('hidden');
+                    if(user.photoURL) document.getElementById('user-avatar').src = user.photoURL;
+                    initApp(user.uid);
+                } else {
+                    document.getElementById('login-overlay').classList.remove('hidden');
+                }
             });
-            if(t==='retirement') setTimeout(window.calcRetirement,100);
-        };
+        }
 
-        window.changePage = (d) => { currentPage += d; renderTable(); };
+        // --- CSV Import ---
+        document.getElementById('csv-file-input').addEventListener('change', handleFileSelect, false);
+        function handleFileSelect(evt) {
+            const file = evt.target.files[0];
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: async function(results) {
+                    const data = results.data;
+                    const uid = auth.currentUser.uid;
+                    const batchPromises = [];
+                    
+                    // Find headers ignoring case
+                    const getVal = (row, keys) => {
+                        const key = Object.keys(row).find(k => keys.some(x => k.toLowerCase().includes(x.toLowerCase())));
+                        return key ? row[key] : "";
+                    };
 
-        window.submitRecord = async () => {
-             const btn=document.getElementById('btn-save'); 
-             btn.textContent='處理中...';
+                    for (let row of data) {
+                         let newRec = {
+                            date: getVal(row, ['date', '日期']),
+                            owner: getVal(row, ['owner', '擁有人']) || '本人',
+                            cash_tdcc: cleanNum(getVal(row, ['cash_tdcc', '集保'])),
+                            cash_cathay: cleanNum(getVal(row, ['cash_cathay', '國泰'])),
+                            cash_bot: cleanNum(getVal(row, ['cash_bot', '台銀'])),
+                            funds_tdcc: cleanNum(getVal(row, ['funds', '基金'])),
+                            tw_tdcc: cleanNum(getVal(row, ['tw_tdcc', '台股'])),
+                            tw_lending: cleanNum(getVal(row, ['lending', '出借'])),
+                            us_cathay: cleanNum(getVal(row, ['us_cathay', '美股-國泰'])),
+                            us_schwab: cleanNum(getVal(row, ['schwab', '嘉信'])),
+                            crypto: cleanNum(getVal(row, ['crypto', '虛擬'])),
+                            us_rate: cleanNum(getVal(row, ['rate', '匯率'])),
+                            note: getVal(row, ['note', '備註'])
+                        };
+                        // Simple validation
+                        if(newRec.date) batchPromises.push(addDoc(collection(db, "users", uid, "records"), newRec));
+                    }
+                    
+                    if(batchPromises.length > 0) {
+                        await Promise.all(batchPromises);
+                        alert(`成功匯入 ${batchPromises.length} 筆資料！`);
+                        document.getElementById('import-section').classList.add('hidden');
+                    } else {
+                        alert("未找到有效資料，請檢查 CSV 格式");
+                    }
+                }
+            });
+        }
+        function cleanNum(val) { if(!val) return 0; return parseFloat(String(val).replace(/,/g, '').replace(/"/g, '')) || 0; }
+
+        async function initApp(uid) {
+            document.getElementById('initial-loader').classList.remove('hidden');
+            const recordsRef = collection(db, "users", uid, "records");
+            
+            // Check for data (one-time)
+            const snap = await getDocs(recordsRef);
+            if (snap.empty) { document.getElementById('import-section').classList.remove('hidden'); }
+            
+            const q = query(recordsRef, orderBy("date", "asc"));
+            onSnapshot(q, (snapshot) => {
+                rawRecords = [];
+                snapshot.forEach((doc) => { rawRecords.push({ id: doc.id, ...doc.data() }); });
+                document.getElementById('initial-loader').classList.add('hidden');
+                document.getElementById('view-overview').classList.remove('hidden');
+                
+                parseFamilySettings();
+                populateMemberSelects();
+                window.filterData();
+            });
+        }
+
+        // --- UI Logic ---
+        window.togglePrivacy = function() { isPrivacy = !isPrivacy; document.body.classList.toggle('privacy-mode', isPrivacy); const iconClass = isPrivacy ? "fa-eye-slash" : "fa-eye"; document.getElementById('privacy-icon-desktop').className = `fa-solid ${iconClass}`; document.getElementById('privacy-icon-mobile').className = `fa-solid ${iconClass}`; };
+        window.openModal = function() { document.getElementById('modal-add').classList.remove('hidden'); document.getElementById('inp-date').valueAsDate = new Date(); };
+        window.closeModal = function() { document.getElementById('modal-add').classList.add('hidden'); };
+        window.switchTab = function(t) { ['overview','retirement'].forEach(x=>{ document.getElementById('view-'+x).classList.toggle('hidden', x!==t); document.getElementById('tab-'+x).className = x===t ? "px-4 py-1.5 rounded-lg text-sm font-bold bg-white text-indigo-600 shadow-sm" : "px-4 py-1.5 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700"; }); if(t==='retirement') setTimeout(window.calcRetirement,100); };
+        window.changePage = function(d) { currentPage += d; renderTable(); };
+        window.handleDateChange = function() {}; 
+
+        window.submitRecord = async function() {
+             const btn=document.getElementById('btn-save'); btn.textContent='處理中...';
              const r = {
                 date: document.getElementById('inp-date').value,
                 owner: document.getElementById('inp-owner').value,
@@ -311,22 +411,39 @@
                  window.closeModal();
                  btn.textContent = '儲存紀錄';
                  document.querySelectorAll('.input-lively').forEach(i=>i.value='');
-             } catch (e) {
-                 console.error(e);
-                 alert("儲存失敗");
-                 btn.textContent = '儲存紀錄';
-             }
+             } catch (e) { console.error(e); alert("儲存失敗"); btn.textContent = '儲存紀錄'; }
         };
 
-        window.filterData = () => {
+        // --- Data Processing ---
+        function parseFamilySettings() {
+             let membersStr = String(rawSettings.familyMembers || "本人"); familyMembers = membersStr.split(',').map(s => s.trim());
+             let cashArr = String(rawSettings.initialCashCost||"0").split(',').map(Number);
+             let investArr = String(rawSettings.initialInvestCost||"0").split(',').map(Number);
+             let monthArr = String(rawSettings.monthlyContribution||"0").split(',').map(Number);
+             let retireAgeArr = String(rawSettings.retirementAge||"60").split(',').map(Number);
+             let lifeExpArr = String(rawSettings.lifeExpectancy||"90").split(',').map(Number);
+             memberSettings = {};
+             familyMembers.forEach((name, index) => {
+                 memberSettings[name] = {
+                     initialCash: cashArr[index] || 0, initialInvest: investArr[index] || 0, monthly: monthArr[index] || 0,
+                     retireAge: retireAgeArr[index] || 60, lifeExpectancy: lifeExpArr[index] || 90
+                 };
+             });
+        }
+        function populateMemberSelects() {
+            const filterSel = document.getElementById('member-filter'); const inputSel = document.getElementById('inp-owner');
+            filterSel.innerHTML = '<option value="all">全體成員</option>'; inputSel.innerHTML = ''; 
+            familyMembers.forEach(m => { const opt1 = document.createElement('option'); opt1.value = m; opt1.textContent = m; filterSel.appendChild(opt1); const opt2 = document.createElement('option'); opt2.value = m; opt2.textContent = m; inputSel.appendChild(opt2); });
+            if (familyMembers.includes("本人")) { filterSel.value = "本人"; inputSel.value = "本人"; }
+        }
+
+        window.filterData = function() {
             const selectedMember = document.getElementById('member-filter').value;
             document.getElementById('retire-target-name').textContent = selectedMember === 'all' ? '全體' : selectedMember;
             let targetInvestCost = 0, targetCashCost = 0, targetMonthly = 0, targetRetireAge = 60, targetLifeExpectancy = 90;
 
             if (selectedMember === 'all') {
-                Object.values(memberSettings).forEach(c => {
-                    targetInvestCost += c.initialInvest; targetCashCost += c.initialCash; targetMonthly += c.monthly; targetRetireAge += c.retireAge; targetLifeExpectancy = Math.max(targetLifeExpectancy, c.lifeExpectancy);
-                });
+                Object.values(memberSettings).forEach(c => { targetInvestCost += c.initialInvest; targetCashCost += c.initialCash; targetMonthly += c.monthly; targetRetireAge += c.retireAge; targetLifeExpectancy = Math.max(targetLifeExpectancy, c.lifeExpectancy); });
                 targetRetireAge = Math.round(targetRetireAge / Math.max(1, familyMembers.length)); 
                 filteredRecords = aggregateRecordsByDate(rawRecords, targetInvestCost, targetCashCost, targetMonthly);
                 document.getElementById('roi-note').textContent = "*全體總和成本";
@@ -350,192 +467,9 @@
             renderFireProgressBar(filteredRecords.length > 0 ? filteredRecords[filteredRecords.length - 1] : null);
         };
 
-        window.calcRetirement = () => {
-            const current = parseFloat(document.getElementById('retire-current').value.replace(/,/g,''))||0;
-            const monthlyContrib = parseFloat(document.getElementById('retire-monthly').value) || 0;
-            const rate = parseFloat(document.getElementById('retire-rate').value)/100;
-            const inflation = parseFloat(document.getElementById('retire-inflation').value)/100;
-            const currentAge = parseInt(document.getElementById('retire-age').value) || 30;
-            const targetAge = parseInt(document.getElementById('retire-age-target').value) || 60;
-            const targetLifeExpectancy = parseInt(document.getElementById('retire-life-expectancy').value) || 90;
-            
-            let fv = current; 
-            let dataNominal=[current]; 
-            let labels=[currentAge+'歲'];
-
-            let low = 0, high = 1000000; 
-            let optimalWithdrawal = 0;
-            
-            for(let iter=0; iter<20; iter++) { 
-                let mid = (low + high) / 2;
-                let balance = current;
-                let ok = true;
-                for(let age = currentAge + 1; age <= targetLifeExpectancy; age++) {
-                     if (age <= targetAge) {
-                        for(let m=0; m<12; m++) balance = (balance + monthlyContrib) * (1 + rate/12);
-                     } else {
-                        let yearsPassed = age - targetAge; 
-                        let monthlyWithInflation = mid * Math.pow(1 + inflation, yearsPassed);
-                        for(let m=0; m<12; m++) {
-                            balance = balance * (1 + rate/12) - monthlyWithInflation;
-                        }
-                     }
-                     if (balance < 0) { ok = false; break; }
-                }
-                if (ok) { optimalWithdrawal = mid; low = mid; } else { high = mid; }
-            }
-            
-            fv = current;
-            dataNominal = [current];
-            labels = [currentAge+'歲'];
-            let runOutAge = null;
-            let retireAsset = 0;
-
-            for(let age = currentAge + 1; age <= 100; age++) { 
-                if (age <= targetAge) {
-                    for(let m=0; m<12; m++) fv = (fv + monthlyContrib) * (1 + rate/12);
-                } else {
-                    let yearsPassed = age - targetAge;
-                    let monthlyWithInflation = optimalWithdrawal * Math.pow(1 + inflation, yearsPassed);
-                    for(let m=0; m<12; m++) fv = fv * (1 + rate/12) - monthlyWithInflation;
-                }
-                if (fv < 0) { fv = 0; if(!runOutAge) runOutAge = age; }
-                if (age === targetAge) retireAsset = fv;
-                dataNominal.push(Math.round(fv));
-                labels.push(age+'歲');
-            }
-
-            document.getElementById('retire-monthly-withdraw-display').textContent = formatMoney(Math.round(optimalWithdrawal)) + " 元";
-            document.getElementById('retire-result-out').textContent = `${targetLifeExpectancy} 歲歸零`;
-            document.getElementById('val-at-retire').textContent = formatMoney(Math.round(retireAsset));
-            
-            const statusBadge = document.getElementById('retire-status-badge');
-            statusBadge.innerHTML = '<i class="fa-solid fa-check-circle text-emerald-500"></i> <span class="text-emerald-600">試算完成</span>';
-            statusBadge.className = "px-4 py-2 rounded-xl bg-emerald-50 font-bold text-sm flex items-center gap-2";
-
-            const ctx = document.getElementById('chart-retirement').getContext('2d');
-            if(charts.retire) charts.retire.destroy();
-            charts.retire = new Chart(ctx, {
-                type:'line', data:{labels:labels, datasets:[{label:'名目資產', data:dataNominal, borderColor:'#6366f1', backgroundColor:(ctx)=>{const c=ctx.chart.ctx;const g=c.createLinearGradient(0,0,0,300);g.addColorStop(0,'rgba(99,102,241,0.5)');g.addColorStop(1,'rgba(99,102,241,0)');return g}, fill:true, pointRadius:0, borderWidth:2}]},
-                options:{responsive:true, maintainAspectRatio:false, scales:{y:{ticks:{callback:v=>(v/10000).toFixed(0)+'萬'}}}, interaction:{mode:'index', intersect:false}, plugins:{annotation:{annotations:{line1:{type:'line',xMin:targetAge-currentAge,xMax:targetAge-currentAge,borderColor:'rgb(255,99,132)',borderWidth:2,label:{content:'退休',enabled:true,position:'start'}}}}}}
-            });
-        };
-
-        if(auth) {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    document.getElementById('login-overlay').classList.add('hidden');
-                    document.getElementById('app-header').classList.remove('hidden');
-                    document.getElementById('app-main').classList.remove('hidden');
-                    if(user.photoURL) document.getElementById('user-avatar').src = user.photoURL;
-                    initApp(user.uid);
-                } else {
-                    document.getElementById('login-overlay').classList.remove('hidden');
-                }
-            });
-        }
-
-        document.getElementById('csv-file-input').addEventListener('change', handleFileSelect, false);
-        function handleFileSelect(evt) {
-            const file = evt.target.files[0];
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
-                complete: async function(results) {
-                    const data = results.data;
-                    const uid = auth.currentUser.uid;
-                    const batchPromises = [];
-                    for (let row of data) {
-                         let newRec = {
-                            date: row['date'] || row['日期'],
-                            owner: row['owner'] || '本人',
-                            cash_tdcc: cleanNum(row['cash_tdcc'] || row['現金-集保加總']),
-                            cash_cathay: cleanNum(row['cash_cathay'] || row['現金-國泰(一般戶+外幣折台)']),
-                            cash_bot: cleanNum(row['cash_bot'] || row['現金-台銀']),
-                            funds_tdcc: cleanNum(row['funds_tdcc'] || row['基金-集保']),
-                            tw_tdcc: cleanNum(row['tw_tdcc'] || row['台股-集保']),
-                            tw_lending: cleanNum(row['tw_lending'] || row['台股-出借']),
-                            us_cathay: cleanNum(row['us_cathay'] || row['美股-國泰']),
-                            us_schwab: cleanNum(row['us_schwab'] || row['美股-嘉信']),
-                            crypto: cleanNum(row['crypto'] || row['虛擬貨幣-幣安+Kraken']),
-                            us_rate: cleanNum(row['us_rate'] || row['美金匯率']),
-                            note: row['note'] || row['備註'] || ''
-                        };
-                        batchPromises.push(addDoc(collection(db, "users", uid, "records"), newRec));
-                    }
-                    await Promise.all(batchPromises);
-                    alert("匯入成功！");
-                    document.getElementById('import-section').classList.add('hidden');
-                }
-            });
-        }
-        function cleanNum(val) { if(!val) return 0; return parseFloat(String(val).replace(/,/g, '').replace(/"/g, '')) || 0; }
-
-        async function initApp(uid) {
-            document.getElementById('initial-loader').classList.remove('hidden');
-            const recordsRef = collection(db, "users", uid, "records");
-            const recordSnapshot = await getDocs(recordsRef);
-            if (recordSnapshot.empty) { document.getElementById('import-section').classList.remove('hidden'); }
-            
-            const q = query(recordsRef, orderBy("date", "asc"));
-            onSnapshot(q, (snapshot) => {
-                rawRecords = [];
-                snapshot.forEach((doc) => { rawRecords.push({ id: doc.id, ...doc.data() }); });
-                document.getElementById('initial-loader').classList.add('hidden');
-                document.getElementById('view-overview').classList.remove('hidden');
-                parseFamilySettings();
-                populateMemberSelects();
-                window.filterData();
-            });
-        }
-
-        function formatMoney(num) { return new Intl.NumberFormat('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}).format(num); }
-        function parseFamilySettings() { /* same */ 
-             let membersStr = String(rawSettings.familyMembers || "本人");
-             familyMembers = membersStr.split(',').map(s => s.trim());
-             let cashArr = String(rawSettings.initialCashCost||"0").split(',').map(Number);
-             let investArr = String(rawSettings.initialInvestCost||"0").split(',').map(Number);
-             let monthArr = String(rawSettings.monthlyContribution||"0").split(',').map(Number);
-             let retireAgeArr = String(rawSettings.retirementAge||"60").split(',').map(Number);
-             let lifeExpArr = String(rawSettings.lifeExpectancy||"90").split(',').map(Number);
-             memberSettings = {};
-             familyMembers.forEach((name, index) => {
-                 memberSettings[name] = {
-                     initialCash: cashArr[index] || 0, initialInvest: investArr[index] || 0, monthly: monthArr[index] || 0,
-                     retireAge: retireAgeArr[index] || 60, lifeExpectancy: lifeExpArr[index] || 90
-                 };
-             });
-        }
-        function populateMemberSelects() {
-             const filterSel = document.getElementById('member-filter');
-             const inputSel = document.getElementById('inp-owner');
-             filterSel.innerHTML = '<option value="all">全體成員</option>'; inputSel.innerHTML = '';
-             familyMembers.forEach(m => {
-                 const opt1 = document.createElement('option'); opt1.value = m; opt1.textContent = m; filterSel.appendChild(opt1);
-                 const opt2 = document.createElement('option'); opt2.value = m; opt2.textContent = m; inputSel.appendChild(opt2);
-             });
-             if (familyMembers.includes("本人")) { filterSel.value = "本人"; inputSel.value = "本人"; }
-        }
-        function initRetirementInputs() {
-            const latest = filteredRecords.length > 0 ? filteredRecords[filteredRecords.length-1]._totalAssets : 0;
-            document.getElementById('retire-current').value = formatMoney(latest);
-            if(rawSettings.retirementGoal) document.getElementById('retire-goal').value = rawSettings.retirementGoal;
-            if(rawSettings.expectedReturn) { let r = rawSettings.expectedReturn; if(r < 1) r = r * 100; document.getElementById('retire-rate').value = r; }
-            if(rawSettings.inflationRate) document.getElementById('retire-inflation').value = rawSettings.inflationRate;
-            if(rawSettings.currentAge) document.getElementById('retire-age').value = rawSettings.currentAge;
-            window.calcRetirement();
-        }
-        
-        function processSingleMemberData(records, initInvest, initCash, monthly) {
-            if(records.length === 0) return;
-            const startDate = new Date(records[0].date);
-            records.forEach(r => { 
-                Object.assign(r, calculateDerivedData(r, startDate, initInvest, initCash, monthly)); 
-            });
-        }
-        
         function calculateYTD(records) { records.forEach(r => { const currentYear = new Date(r.date).getFullYear(); const prevYearRecords = records.filter(p => new Date(p.date).getFullYear() === currentYear - 1); const prevYearRecord = prevYearRecords.length > 0 ? prevYearRecords[prevYearRecords.length - 1] : null; let lastYearTotal = 0, lastYearInvest = 0; if (prevYearRecord) { lastYearTotal = prevYearRecord._totalAssets; lastYearInvest = prevYearRecord._investAssets; } else { r._ytdTotalROI = 0; r._ytdInvestROI = 0; return; } r._ytdTotalROI = lastYearTotal > 0 ? ((r._totalAssets - lastYearTotal) / lastYearTotal) * 100 : 0; r._ytdInvestROI = lastYearInvest > 0 ? ((r._investAssets - lastYearInvest) / lastYearInvest) * 100 : 0; }); }
         function aggregateRecordsByDate(records, initInvest, initCash, monthly) { const grouped = {}; records.forEach(r => { const d = r.date; if (!grouped[d]) { grouped[d] = { date: d, owner: '全體合計', cash_tdcc:0, cash_cathay:0, cash_bot:0, funds_tdcc:0, tw_tdcc:0, tw_lending:0, us_cathay:0, us_schwab:0, crypto:0, us_rate: r.us_rate, note: r.note }; } const g = grouped[d]; g.cash_tdcc += (r.cash_tdcc||0); g.cash_cathay += (r.cash_cathay||0); g.cash_bot += (r.cash_bot||0); g.funds_tdcc += (r.funds_tdcc||0); g.tw_tdcc += (r.tw_tdcc||0); g.tw_lending += (r.tw_lending||0); g.us_cathay += (r.us_cathay||0); g.us_schwab += (r.us_schwab||0); g.crypto += (r.crypto||0); }); const result = Object.values(grouped).sort((a, b) => new Date(a.date) - new Date(b.date)); const startDate = result.length > 0 ? new Date(result[0].date) : new Date(); return result.map(r => calculateDerivedData(r, startDate, initInvest, initCash, monthly)); }
+        function processSingleMemberData(records, initInvest, initCash, monthly) { if(records.length === 0) return; const startDate = new Date(records[0].date); records.forEach(r => { Object.assign(r, calculateDerivedData(r, startDate, initInvest, initCash, monthly)); }); }
         function calculateDerivedData(r, startDate, initInvest, initCash, monthly) { const cash = (r.cash_tdcc||0)+(r.cash_cathay||0)+(r.cash_bot||0); const rate = r.us_rate || 31; const investTwd = (r.funds_tdcc||0)+(r.tw_tdcc||0)+(r.tw_lending||0); const investUsd = ((r.us_cathay||0)+(r.us_schwab||0)+(r.crypto||0)) * rate; const investTotal = investTwd + investUsd; const total = cash + investTotal; const currDate = new Date(r.date); let months = (currDate.getFullYear() - startDate.getFullYear()) * 12 + (currDate.getMonth() - startDate.getMonth()); if (months < 0) months = 0; const calcInvestCost = initInvest + (months * monthly); const calcTotalCost = initCash + initInvest + (months * monthly); const investROI = calcInvestCost > 0 ? ((investTotal - calcInvestCost) / calcInvestCost) * 100 : 0; const totalROI = calcTotalCost > 0 ? ((total - calcTotalCost) / calcTotalCost) * 100 : 0; return { ...r, _totalAssets: total, _cashAssets: cash, _investAssets: investTotal, _calcInvestCost: calcInvestCost, _calcTotalCost: calcTotalCost, _investROI: investROI, _totalROI: totalROI, _totalProfit: total - calcTotalCost, _ytdTotalROI: 0, _ytdInvestROI: 0 }; }
 
         function renderOverview() {
@@ -642,7 +576,7 @@
                 type: 'line',
                 data: {
                     labels: filteredRecords.map(d=>d.date),
-                    datasets: [{label:'總資產', data:filteredRecords.map(d=>d._totalAssets), borderColor:'#4f46e5', backgroundColor:gradTotal, fill:true, tension:0.4, pointRadius:2, pointHoverRadius:6}, {label:'投資資產', data:filteredRecords.map(d=>d._investAssets), borderColor:'#f59e0b', backgroundColor:gradInvest, fill:true, tension:0.4, pointRadius:2, pointHoverRadius:6}]
+                    datasets: [{label:'總資產', data:filteredRecords.map(d=>d._totalAssets), borderColor:'#4f46e5', backgroundColor:gradTotal, fill:true, tension:0.4, pointRadius:2}, {label:'投資資產', data:filteredRecords.map(d=>d._investAssets), borderColor:'#f59e0b', backgroundColor:gradInvest, fill:true, tension:0.4, pointRadius:2}]
                 },
                 options: { responsive:true, maintainAspectRatio:false, scales:{x:{grid:{display:false}}, y:{ticks:{callback:v=>(v/10000).toFixed(0)+'萬'}}} }
             });
@@ -660,8 +594,66 @@
                 options: { responsive:true, maintainAspectRatio:false, cutout:'75%', layout:{padding:{bottom:10}}, plugins:{legend:{display:true, position:'bottom', labels:{usePointStyle:true, padding:20, font:{family:"'Poppins', sans-serif", size:11, weight:'bold'}, color:'#475569'}}, datalabels:{color:'#fff', formatter:(v,c)=>{let s=0;c.chart.data.datasets[0].data.map(d=>s+=d);return (v*100/s).toFixed(0)+"%"}, font:{weight:'bold',size:11}}} }
             });
         }
-        function handleDateChange(d) { if(rawSettings.useAutoRate) { google.script.run.withSuccessHandler(r=>{if(r.success)document.getElementById('inp-rate').value=r.rate}).getHistoricalRate(d); }}
-        const st=document.createElement('style'); st.textContent=`.input-field{width:100%;border:1px solid #e2e8f0;border-radius:0.5rem;padding:0.5rem;font-size:0.875rem;transition:border-color 0.2s}.input-field:focus{outline:none;border-color:#6366f1;ring:2px solid #c7d2fe}`; document.head.appendChild(st);
+
+        window.calcRetirement = function() {
+            const current = parseFloat(document.getElementById('retire-current').value.replace(/,/g,''))||0;
+            const monthlyContrib = parseFloat(document.getElementById('retire-monthly').value) || 0;
+            const rate = parseFloat(document.getElementById('retire-rate').value)/100;
+            const inflation = parseFloat(document.getElementById('retire-inflation').value)/100;
+            const currentAge = parseInt(document.getElementById('retire-age').value) || 30;
+            const targetAge = parseInt(document.getElementById('retire-age-target').value) || 60;
+            const targetLifeExpectancy = parseInt(document.getElementById('retire-life-expectancy').value) || 90;
+            const goal = parseFloat(document.getElementById('retire-goal').value) || 0;
+
+            let fv = current; let dataNominal=[current]; let labels=[currentAge+'歲'];
+            let low = 0, high = 1000000; let optimalWithdrawal = 0;
+            
+            for(let iter=0; iter<20; iter++) { 
+                let mid = (low + high) / 2; let balance = current; let ok = true;
+                for(let age = currentAge + 1; age <= targetLifeExpectancy; age++) {
+                     if (age <= targetAge) { for(let m=0; m<12; m++) balance = (balance + monthlyContrib) * (1 + rate/12); } 
+                     else {
+                        let yearsPassed = age - targetAge; 
+                        let monthlyWithInflation = mid * Math.pow(1 + inflation, yearsPassed);
+                        for(let m=0; m<12; m++) balance = balance * (1 + rate/12) - monthlyWithInflation;
+                     }
+                     if (balance < 0) { ok = false; break; }
+                }
+                if (ok) { optimalWithdrawal = mid; low = mid; } else { high = mid; }
+            }
+            
+            fv = current; dataNominal = [current]; labels = [currentAge+'歲'];
+            let runOutAge = null; let retireAsset = 0;
+
+            for(let age = currentAge + 1; age <= 100; age++) { 
+                if (age <= targetAge) { for(let m=0; m<12; m++) fv = (fv + monthlyContrib) * (1 + rate/12); } 
+                else {
+                    let yearsPassed = age - targetAge;
+                    let monthlyWithInflation = optimalWithdrawal * Math.pow(1 + inflation, yearsPassed);
+                    for(let m=0; m<12; m++) fv = fv * (1 + rate/12) - monthlyWithInflation;
+                }
+                if (fv < 0) { fv = 0; if(!runOutAge) runOutAge = age; }
+                if (age === targetAge) retireAsset = fv;
+                dataNominal.push(Math.round(fv)); labels.push(age+'歲');
+            }
+
+            document.getElementById('retire-monthly-withdraw-display').textContent = formatMoney(Math.round(optimalWithdrawal)) + " 元";
+            document.getElementById('retire-result-out').textContent = `${targetLifeExpectancy} 歲歸零`;
+            document.getElementById('val-at-retire').textContent = formatMoney(Math.round(retireAsset));
+            
+            const statusBadge = document.getElementById('retire-status-badge');
+            statusBadge.innerHTML = '<i class="fa-solid fa-check-circle text-emerald-500"></i> <span class="text-emerald-600">試算完成</span>';
+            statusBadge.className = "px-4 py-2 rounded-xl bg-emerald-50 font-bold text-sm flex items-center gap-2";
+
+            const ctx = document.getElementById('chart-retirement').getContext('2d');
+            if(charts.retire) charts.retire.destroy();
+            charts.retire = new Chart(ctx, {
+                type:'line', data:{labels:labels, datasets:[{label:'名目資產', data:dataNominal, borderColor:'#6366f1', backgroundColor:(ctx)=>{const c=ctx.chart.ctx;const g=c.createLinearGradient(0,0,0,300);g.addColorStop(0,'rgba(99,102,241,0.5)');g.addColorStop(1,'rgba(99,102,241,0)');return g}, fill:true, pointRadius:0, borderWidth:2}]},
+                options:{responsive:true, maintainAspectRatio:false, scales:{y:{ticks:{callback:v=>(v/10000).toFixed(0)+'萬'}}}, interaction:{mode:'index', intersect:false}, plugins:{annotation:{annotations:{line1:{type:'line',xMin:targetAge-currentAge,xMax:targetAge-currentAge,borderColor:'rgb(255,99,132)',borderWidth:2,label:{content:'退休',enabled:true,position:'start'}}}}}}
+            });
+        }
+
+        function formatMoney(num) { return new Intl.NumberFormat('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}).format(num); }
     </script>
 </body>
 </html>
