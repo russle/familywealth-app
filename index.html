@@ -20,26 +20,36 @@
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
         .font-poppins { font-family: 'Poppins', sans-serif; }
+        
+        /* UI Components */
         .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(226, 232, 240, 0.8); }
         .lively-card { background: white; border-radius: 1.5rem; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; }
         .lively-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border-color: #e2e8f0; }
         .input-lively { width: 100%; border: 2px solid #f1f5f9; border-radius: 1rem; padding: 0.6rem 1rem; font-weight: 600; color: #334155; transition: all 0.2s; background-color: #f8fafc; }
         .input-lively:focus { outline: none; background-color: white; border-color: #818cf8; box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.1); }
-        .input-lively:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+        
+        /* Privacy Mode */
         body.privacy-mode .privacy-val { filter: blur(8px); opacity: 0.6; user-select: none; transition: all 0.3s ease; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+
+        /* ★★★ 修正點：只保留定位與背景，移除 display: flex，交由 HTML class 控制 ★★★ */
+        #login-overlay { 
+            position: fixed; 
+            inset: 0; 
+            z-index: 100; 
+            background: rgba(255,255,255,0.98); 
+        }
+        
+        /* Animations */
         .animate-enter { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
         @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-        #login-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(255,255,255,0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden bg-slate-50">
 
-    <!-- Login Overlay -->
-    <div id="login-overlay">
+    <!-- Login Screen -->
+    <!-- ★★★ 修正點：加上 flex flex-col justify-center items-center 以取代 CSS 中的定義 ★★★ -->
+    <div id="login-overlay" class="flex flex-col justify-center items-center">
         <div class="text-center mb-8 animate-enter">
             <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center text-white text-4xl shadow-xl mx-auto mb-4 shadow-indigo-500/30"><i class="fa-solid fa-shield-cat"></i></div>
             <h1 class="text-3xl font-bold text-slate-800 mb-2">MyWealth</h1>
@@ -121,6 +131,7 @@
                         </div>
                         <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-indigo-50 rounded-full opacity-50 group-hover:scale-125 transition-transform duration-500"></div>
                     </div>
+                    <!-- YTD Total -->
                     <div class="lively-card p-6 relative overflow-hidden group border-0 ring-2 ring-slate-100">
                         <div class="relative z-10">
                             <div class="flex items-center gap-2 mb-2"><p class="text-slate-500 text-xs font-bold uppercase tracking-wider">總資產成長 (YTD)</p></div>
@@ -129,6 +140,7 @@
                             <p class="mt-2 text-[10px] text-slate-400 text-right font-medium">資產變動率</p>
                         </div>
                     </div>
+                    <!-- YTD Invest -->
                     <div class="lively-card p-0 relative overflow-hidden group border-0 ring-4 ring-indigo-50 ring-offset-2">
                         <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-700"></div>
                         <div class="relative z-10 p-6 text-white">
@@ -280,7 +292,7 @@
             retirementGoal: 20000000, expectedReturn: 0.08, defaultExchangeRate: 31.5, 
             useAutoRate: false, currentAge: 43, inflationRate: 2,
             familyMembers: "本人,大女兒,小女兒",
-            initialCashCost: "670000, 200000, 100000",
+            initialCashCost: "1500000, 10000, 10000",
             initialInvestCost: "1830000, 455173, 162000",
             monthlyContribution: "36000, 5000, 10000",
             retirementAge: "60, 60, 60",
