@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyWealth - 家庭資產管家</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js & Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/2.2.1/chartjs-plugin-annotation.min.js"></script>
+    <!-- PapaParse for CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
@@ -26,8 +31,7 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
         .animate-enter { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-        
-        /* Login Overlay */
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
         #login-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(255,255,255,0.98); display: flex; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
@@ -44,9 +48,8 @@
              <button onclick="loginWithGoogle()" class="w-full bg-white border border-slate-200 px-6 py-3 rounded-xl font-bold text-slate-700 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all flex items-center justify-center gap-3">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5"> Google 登入
             </button>
-             <!-- Debug info -->
              <p id="login-status" class="text-xs text-center text-red-500 font-mono"></p>
-             <p class="text-[10px] text-slate-400 text-center mt-4">請確保已填入 Firebase Config<br>且並非使用 file:// 開啟</p>
+             <p class="text-[10px] text-slate-400 text-center mt-4">請確保已填入 Firebase Config</p>
         </div>
     </div>
 
@@ -85,7 +88,7 @@
     <main id="app-main" class="flex-grow overflow-y-auto custom-scrollbar p-4 sm:p-6 relative hidden">
         <div class="max-w-7xl mx-auto space-y-8 pb-12">
             
-            <!-- CSV Import (Hidden by default, visible after login if empty) -->
+            <!-- CSV Import -->
             <div id="import-section" class="hidden bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl mb-6">
                 <h3 class="font-bold text-blue-700 mb-2">初始化資料庫</h3>
                 <p class="text-sm text-blue-600 mb-3">檢測到您的資料庫為空，您可以選擇匯入 CSV 檔案 (Records.csv)。</p>
@@ -95,12 +98,12 @@
             <!-- Loading -->
             <div id="initial-loader" class="flex flex-col items-center justify-center h-[60vh]">
                 <div class="relative w-20 h-20"><div class="absolute inset-0 border-4 border-indigo-100 rounded-full animate-ping"></div><div class="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>
-                <p class="mt-6 text-slate-500 font-bold tracking-wide animate-pulse">正在同步資料庫...</p>
+                <p class="mt-6 text-slate-500 font-bold tracking-wide animate-pulse">正在同步家庭資產數據...</p>
             </div>
 
-            <!-- Overview -->
+            <!-- Overview View -->
             <div id="view-overview" class="hidden space-y-6 animate-enter">
-                <!-- 1. KPI Cards -->
+                <!-- KPI Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div class="lively-card p-6 relative overflow-hidden group md:col-span-2">
                         <div class="relative z-10">
@@ -109,7 +112,6 @@
                             <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between text-xs font-medium text-slate-500"><span>成本: <span id="val-total-cost" class="font-poppins privacy-val">---</span></span><span id="val-total-profit-color">損益: <span id="val-total-profit" class="font-poppins privacy-val">---</span></span></div>
                         </div>
                     </div>
-                    <!-- YTD Total -->
                     <div class="lively-card p-6 relative overflow-hidden group border-0 ring-2 ring-slate-100">
                         <div class="relative z-10">
                             <div class="flex items-center gap-2 mb-2"><p class="text-slate-500 text-xs font-bold uppercase tracking-wider">總資產成長 (YTD)</p></div>
@@ -118,10 +120,9 @@
                             <p class="mt-2 text-[10px] text-slate-400 text-right font-medium">資產變動率</p>
                         </div>
                     </div>
-                    <!-- YTD Invest -->
                     <div class="lively-card p-0 relative overflow-hidden group border-0 ring-4 ring-indigo-50 ring-offset-2">
-                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-700"></div>
                         <div class="relative z-10 p-6 text-white">
+                            <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-700 -z-10"></div>
                             <div class="flex items-center gap-2 mb-2"><p class="text-indigo-100 text-xs font-bold uppercase tracking-wider">投資成長 (YTD)</p></div>
                             <h3 class="text-2xl font-bold font-poppins tracking-tight" id="val-invest-roi">---%</h3>
                             <div class="mt-4 relative h-1.5 w-full bg-white/20 rounded-full overflow-hidden backdrop-blur-sm"><div id="bar-invest-roi" class="absolute top-0 left-0 h-full bg-white rounded-full transition-all duration-1000" style="width: 0%"></div></div>
@@ -130,9 +131,9 @@
                     </div>
                 </div>
                 
-                <!-- 2. FIRE & Goal -->
+                <!-- FIRE & Goal -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="lively-card p-6 bg-gradient-to-r from-slate-800 to-indigo-900 text-white relative overflow-hidden border-0 shadow-xl shadow-indigo-900/20">
+                    <div class="lively-card p-6 bg-gradient-to-r from-slate-800 to-indigo-900 text-white relative overflow-hidden border-0 shadow-xl">
                         <div class="relative z-10">
                             <div class="flex justify-between items-end mb-3">
                                 <div><h3 class="text-indigo-200 text-xs font-bold uppercase tracking-widest mb-1">FIRE 倒數鐘</h3><div id="fire-prediction" class="text-slate-300 text-sm font-medium">計算中...</div></div>
@@ -144,9 +145,7 @@
                     <div class="lively-card p-6 bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-100 relative overflow-hidden flex flex-col justify-center">
                         <div class="relative z-10 flex flex-col gap-4">
                             <div class="flex justify-between items-start">
-                                <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white flex-shrink-0 flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-100"><i class="fa-solid fa-bullseye text-xl"></i></div>
-                                    <div><h3 class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-0.5" id="goal-year-title">年度目標</h3><div class="flex items-baseline gap-2"><span class="text-xl font-bold font-poppins text-emerald-700 privacy-val" id="val-year-goal">---</span><span class="text-[10px] text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full font-medium">預期: <span id="val-expected-return">--%</span></span></div></div>
-                                </div>
+                                <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white flex-shrink-0 flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-100"><i class="fa-solid fa-bullseye text-xl"></i></div><div><h3 class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-0.5" id="goal-year-title">本年度目標</h3><div class="flex items-baseline gap-2"><span class="text-xl font-bold font-poppins text-emerald-700 privacy-val" id="val-year-goal">---</span><span class="text-[10px] text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full font-medium">預期: <span id="val-expected-return">--%</span></span></div></div></div>
                                 <div class="text-right"><p class="text-xs text-emerald-600 font-bold uppercase mb-0.5">距離</p><span class="text-lg font-bold font-poppins text-emerald-700 privacy-val" id="val-goal-diff">---</span></div>
                             </div>
                             <div class="w-full"><div class="flex justify-between text-xs font-bold text-emerald-700 mb-1.5"><span>達成進度</span><span id="val-goal-percent">0%</span></div><div class="w-full bg-white rounded-full h-3 overflow-hidden shadow-inner border border-emerald-100/50"><div id="bar-goal-progress" class="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-1000 relative" style="width: 0%"></div></div></div>
@@ -154,10 +153,10 @@
                     </div>
                 </div>
 
-                <!-- 3. Charts -->
+                <!-- Charts -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 lively-card p-6">
-                         <div class="flex items-center justify-between mb-6"><h3 class="font-bold text-slate-700 flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></span> 資產趨勢</h3><div class="text-xs bg-slate-100 px-3 py-1.5 rounded-lg text-slate-500 font-bold flex items-center gap-1"><i class="fa-solid fa-dollar-sign text-xs"></i> <span id="val-latest-rate-card">--</span></div></div>
+                        <div class="flex items-center justify-between mb-6"><h3 class="font-bold text-slate-700 flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></span> 資產趨勢</h3><div class="text-xs bg-slate-100 px-3 py-1.5 rounded-lg text-slate-500 font-bold flex items-center gap-1"><i class="fa-solid fa-dollar-sign text-xs"></i> <span id="val-latest-rate-card">--</span></div></div>
                         <div class="h-72 w-full relative"><canvas id="chart-trend"></canvas></div>
                     </div>
                     <div class="lively-card p-5 flex flex-col justify-center items-center">
@@ -166,19 +165,19 @@
                     </div>
                 </div>
 
-                <!-- 4. Table -->
+                <!-- Table -->
                 <div class="lively-card overflow-hidden flex flex-col">
                     <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                         <h3 class="font-bold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> 歷史紀錄</h3>
-                        <button onclick="openModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-slate-200 transition-all flex items-center gap-2"><i class="fa-solid fa-plus"></i> 新增</button>
+                        <button onclick="openModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg transition-all flex items-center gap-2"><i class="fa-solid fa-plus"></i> 新增</button>
                     </div>
                     <div class="overflow-x-auto flex-grow"><table class="min-w-full divide-y divide-slate-100"><thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold tracking-wider"><tr><th class="px-6 py-4 text-left">日期</th><th class="px-6 py-4 text-left">成員</th><th class="px-6 py-4 text-right">總資產</th><th class="px-6 py-4 text-right text-indigo-500">成本</th><th class="px-6 py-4 text-center">總YTD</th><th class="px-6 py-4 text-center">投資YTD</th><th class="px-6 py-4 text-left">備註</th></tr></thead><tbody class="bg-white divide-y divide-slate-50 text-sm font-medium" id="table-body"></tbody></table></div>
                     <div class="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center"><span class="text-xs text-slate-500 font-bold" id="pagination-info">Page 1</span><div class="flex gap-2"><button onclick="changePage(-1)" id="btn-prev" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold hover:bg-slate-50 disabled:opacity-50">Prev</button><button onclick="changePage(1)" id="btn-next" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold hover:bg-slate-50 disabled:opacity-50">Next</button></div></div>
                 </div>
-             </div>
+            </div>
 
-             <!-- Retirement View -->
-             <div id="view-retirement" class="hidden space-y-6 animate-enter">
+            <!-- Retirement View -->
+            <div id="view-retirement" class="hidden space-y-6 animate-enter">
                 <div class="lively-card p-6 md:p-8">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-4 border-b border-slate-100">
                         <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl"><i class="fa-solid fa-calculator"></i></div><div><h3 class="text-lg font-bold text-slate-800">退休參數設定</h3><p class="text-xs text-slate-400">對象：<span class="text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded" id="retire-target-name">全體</span></p></div></div>
@@ -201,11 +200,11 @@
                         <div class="h-80 w-full relative"><canvas id="chart-retirement"></canvas></div>
                     </div>
                 </div>
-             </div>
+            </div>
         </div>
     </main>
 
-    <!-- Modal Form -->
+    <!-- Modal -->
     <div id="modal-add" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeModal()"></div>
         <div class="flex items-center justify-center min-h-screen p-4">
@@ -215,17 +214,17 @@
                 </div>
                 <div class="p-8 overflow-y-auto max-h-[70vh] custom-scrollbar space-y-6">
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="col-span-2"><label class="input-group-label text-indigo-600">擁有者</label><select id="inp-owner" class="input-lively border-indigo-200 bg-indigo-50/30 focus:border-indigo-500"></select></div>
+                        <div class="col-span-2"><label class="input-group-label text-indigo-600">資產擁有人</label><select id="inp-owner" class="input-lively border-indigo-200 bg-indigo-50/30 focus:border-indigo-500"></select></div>
                         <div><label class="input-group-label">日期</label><input type="date" id="inp-date" class="input-lively"></div>
-                        <div><label class="input-group-label">匯率</label><input type="number" id="inp-rate" step="0.001" class="input-lively"></div>
+                        <div><label class="input-group-label">美金匯率</label><input type="number" id="inp-rate" step="0.001" class="input-lively"></div>
                     </div>
                     <div class="space-y-4">
-                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200"><h4 class="text-xs font-bold text-slate-500 uppercase mb-3">台幣資產</h4><div class="grid grid-cols-2 gap-3"><input type="number" id="inp-cash-tdcc" placeholder="現金-集保" class="input-lively text-sm"><input type="number" id="inp-cash-cathay" placeholder="現金-國泰" class="input-lively text-sm"><input type="number" id="inp-cash-bot" placeholder="現金-台銀" class="input-lively text-sm"><input type="number" id="inp-funds" placeholder="基金" class="input-lively text-sm"><input type="number" id="inp-stock-tw" placeholder="台股-集保" class="input-lively text-sm"><input type="number" id="inp-stock-lending" placeholder="出借" class="input-lively text-sm"></div></div>
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200"><h4 class="text-xs font-bold text-slate-500 uppercase mb-3">台幣資產</h4><div class="grid grid-cols-2 gap-3"><input type="number" id="inp-cash-tdcc" placeholder="現金-集保" class="input-lively text-sm"><input type="number" id="inp-cash-cathay" placeholder="現金-國泰" class="input-lively text-sm"><input type="number" id="inp-cash-bot" placeholder="現金-台銀" class="input-lively text-sm"><input type="number" id="inp-funds" placeholder="基金" class="input-lively text-sm"><input type="number" id="inp-stock-tw" placeholder="台股-集保" class="input-lively text-sm"><input type="number" id="inp-stock-lending" placeholder="台股-出借" class="input-lively text-sm"></div></div>
                         <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200"><h4 class="text-xs font-bold text-slate-500 uppercase mb-3">外幣資產</h4><div class="grid grid-cols-2 gap-3"><input type="number" id="inp-stock-us-cathay" placeholder="美股-國泰" class="input-lively text-sm"><input type="number" id="inp-stock-us-schwab" placeholder="美股-嘉信" class="input-lively text-sm"><input type="number" id="inp-crypto" placeholder="虛擬貨幣" class="input-lively text-sm"></div></div>
                     </div>
                     <div><label class="input-group-label">備註</label><input type="text" id="inp-note" class="input-lively" placeholder="選填..."></div>
                 </div>
-                <div class="px-8 py-5 bg-white border-t flex gap-4"><button onclick="closeModal()" class="flex-1 px-6 py-3 bg-slate-100 rounded-xl font-bold">取消</button><button onclick="submitRecord()" class="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg" id="btn-save">儲存</button></div>
+                <div class="px-8 py-5 bg-white border-t border-slate-100 flex gap-4"><button onclick="closeModal()" class="flex-1 px-6 py-3 bg-slate-100 rounded-xl font-bold">取消</button><button onclick="submitRecord()" class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold shadow-lg" id="btn-save">儲存</button></div>
             </div>
         </div>
     </div>
@@ -236,70 +235,58 @@
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-        // ★★★ 請在此填入您的 Firebase Config ★★★
-          const firebaseConfig = {
-            apiKey: "AIzaSyAgeGiG1hXEHFo33jehxPO7tODCX5v_esk",
-            authDomain: "familywealth-3f7f9.firebaseapp.com",
-            projectId: "familywealth-3f7f9",
-            storageBucket: "familywealth-3f7f9.firebasestorage.app",
-            messagingSenderId: "36026294366",
-            appId: "1:36026294366:web:144387f9c00334691094cf"
-          };
+        // ★★★ 請填入您的 Firebase Config ★★★
+  const firebaseConfig = {
+    apiKey: "AIzaSyAgeGiG1hXEHFo33jehxPO7tODCX5v_esk",
+    authDomain: "familywealth-3f7f9.firebaseapp.com",
+    projectId: "familywealth-3f7f9",
+    storageBucket: "familywealth-3f7f9.firebasestorage.app",
+    messagingSenderId: "36026294366",
+    appId: "1:36026294366:web:144387f9c00334691094cf"
+  };
 
-        let app, db, auth, provider;
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            provider = new GoogleAuthProvider();
-        } catch (e) {
-            console.error("Firebase Init Error:", e);
-            document.getElementById('login-status').textContent = "Firebase Config 設定錯誤，請檢查程式碼";
-        }
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-        // Global State
-        let rawRecords = [], filteredRecords = [], familyMembers = ["本人", "大女兒", "小女兒"], memberSettings = {}, charts = {}, currentPage = 1;
+        // Global Variables
+        let rawRecords = [], filteredRecords = [], familyMembers = ["本人", "大女兒", "小女兒"], memberSettings = {}, charts = {}, currentPage = 1, isPrivacy = false;
         const ITEMS_PER_PAGE = 12;
-        let isPrivacy = false;
-        let rawSettings = { 
+        let rawSettings = { // Default settings
             retirementGoal: 20000000, expectedReturn: 0.08, defaultExchangeRate: 31, 
             useAutoRate: false, currentAge: 43, inflationRate: 2,
             familyMembers: "本人,大女兒,小女兒",
-            initialCashCost: "670000, 200000, 100000",
-            initialInvestCost: "1830000, 455173, 162000",
-            monthlyContribution: "36000, 5000, 10000",
+            initialCashCost: "1500000, 10000, 10000",
+            initialInvestCost: "4000000, 50000, 50000",
+            monthlyContribution: "30000, 3000, 3000",
             retirementAge: "60, 60, 60",
             lifeExpectancy: "90, 90, 90"
         };
 
         // --- Auth ---
         window.loginWithGoogle = () => {
-            if(!auth) return alert("Firebase 未正確初始化");
-            signInWithPopup(auth, provider).catch(error => {
-                console.error("Login failed", error);
-                document.getElementById('login-status').textContent = "登入失敗: " + error.message;
+            signInWithPopup(auth, provider).catch(e => {
+                console.error(e);
+                document.getElementById('login-status').textContent = "登入失敗: " + e.message;
             });
         };
-
         window.logout = () => { signOut(auth).then(() => location.reload()); };
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-overlay').classList.add('hidden');
+                document.getElementById('app-header').classList.remove('hidden');
+                document.getElementById('app-main').classList.remove('hidden');
+                if(user.photoURL) document.getElementById('user-avatar').src = user.photoURL;
+                initApp(user.uid);
+            } else {
+                document.getElementById('login-overlay').classList.remove('hidden');
+            }
+        });
 
-        if(auth) {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    document.getElementById('login-overlay').classList.add('hidden');
-                    document.getElementById('app-header').classList.remove('hidden');
-                    document.getElementById('app-main').classList.remove('hidden');
-                    document.getElementById('user-avatar').src = user.photoURL;
-                    initApp(user.uid);
-                } else {
-                    document.getElementById('login-overlay').classList.remove('hidden');
-                }
-            });
-        }
-
-        // --- CSV Import Logic ---
+        // --- CSV Import ---
         document.getElementById('csv-file-input').addEventListener('change', handleFileSelect, false);
-
         function handleFileSelect(evt) {
             const file = evt.target.files[0];
             Papa.parse(file, {
@@ -309,13 +296,8 @@
                     const data = results.data;
                     const uid = auth.currentUser.uid;
                     const batchPromises = [];
-                    
-                    // Clean data and upload
                     for (let row of data) {
-                        // Normalize keys to match our schema
-                        // Check if row has 'cash_tdcc' etc.
-                        // Simple mapping based on known CSV structure
-                        let newRec = {
+                         let newRec = {
                             date: row['date'] || row['日期'],
                             owner: row['owner'] || '本人',
                             cash_tdcc: cleanNum(row['cash_tdcc'] || row['現金-集保加總']),
@@ -330,51 +312,38 @@
                             us_rate: cleanNum(row['us_rate'] || row['美金匯率']),
                             note: row['note'] || row['備註'] || ''
                         };
-                        
-                        // Upload
                         batchPromises.push(addDoc(collection(db, "users", uid, "records"), newRec));
                     }
-                    
                     await Promise.all(batchPromises);
                     alert("匯入成功！");
                     document.getElementById('import-section').classList.add('hidden');
                 }
             });
         }
-        
-        function cleanNum(val) {
-            if(!val) return 0;
-            return parseFloat(String(val).replace(/,/g, '').replace(/"/g, '')) || 0;
-        }
+        function cleanNum(val) { if(!val) return 0; return parseFloat(String(val).replace(/,/g, '').replace(/"/g, '')) || 0; }
 
         async function initApp(uid) {
             document.getElementById('initial-loader').classList.remove('hidden');
             
-            // Check Records
+            // Check Records exists to show import option
             const recordsRef = collection(db, "users", uid, "records");
             const recordSnapshot = await getDocs(recordsRef);
-            
-            if (recordSnapshot.empty) {
-                // Show Import UI
-                document.getElementById('import-section').classList.remove('hidden');
-            }
-            
-            // Listen to Records
+            if (recordSnapshot.empty) { document.getElementById('import-section').classList.remove('hidden'); }
+
+            // Realtime listener
             const q = query(recordsRef, orderBy("date", "asc"));
             onSnapshot(q, (snapshot) => {
                 rawRecords = [];
                 snapshot.forEach((doc) => { rawRecords.push({ id: doc.id, ...doc.data() }); });
-                
                 document.getElementById('initial-loader').classList.add('hidden');
                 document.getElementById('view-overview').classList.remove('hidden');
-                
                 parseFamilySettings();
                 populateMemberSelects();
                 filterData();
             });
         }
 
-        // --- Core Logic (Same as before) ---
+        // --- UI Logic ---
         window.togglePrivacy = function() { isPrivacy = !isPrivacy; document.body.classList.toggle('privacy-mode', isPrivacy); const iconClass = isPrivacy ? "fa-eye-slash" : "fa-eye"; document.getElementById('privacy-icon-desktop').className = `fa-solid ${iconClass}`; document.getElementById('privacy-icon-mobile').className = `fa-solid ${iconClass}`; };
         window.openModal = function() { document.getElementById('modal-add').classList.remove('hidden'); document.getElementById('inp-date').valueAsDate = new Date(); };
         window.closeModal = function() { document.getElementById('modal-add').classList.add('hidden'); };
@@ -385,43 +354,24 @@
         window.submitRecord = async function() {
              const btn=document.getElementById('btn-save'); btn.textContent='處理中...';
              const r = {
-                date: document.getElementById('inp-date').value,
-                owner: document.getElementById('inp-owner').value,
-                cash_tdcc: Number(document.getElementById('inp-cash-tdcc').value),
-                cash_cathay: Number(document.getElementById('inp-cash-cathay').value),
-                cash_bot: Number(document.getElementById('inp-cash-bot').value),
-                funds_tdcc: Number(document.getElementById('inp-funds').value),
-                tw_tdcc: Number(document.getElementById('inp-stock-tw').value),
-                tw_lending: Number(document.getElementById('inp-stock-lending').value),
-                us_cathay: Number(document.getElementById('inp-stock-us-cathay').value),
-                us_schwab: Number(document.getElementById('inp-stock-us-schwab').value),
-                crypto: Number(document.getElementById('inp-crypto').value),
-                us_rate: Number(document.getElementById('inp-rate').value),
-                note: document.getElementById('inp-note').value
+                date: document.getElementById('inp-date').value, owner: document.getElementById('inp-owner').value,
+                cash_tdcc: Number(document.getElementById('inp-cash-tdcc').value), cash_cathay: Number(document.getElementById('inp-cash-cathay').value), cash_bot: Number(document.getElementById('inp-cash-bot').value),
+                funds_tdcc: Number(document.getElementById('inp-funds').value), tw_tdcc: Number(document.getElementById('inp-stock-tw').value), tw_lending: Number(document.getElementById('inp-stock-lending').value),
+                us_cathay: Number(document.getElementById('inp-stock-us-cathay').value), us_schwab: Number(document.getElementById('inp-stock-us-schwab').value), crypto: Number(document.getElementById('inp-crypto').value),
+                us_rate: Number(document.getElementById('inp-rate').value), note: document.getElementById('inp-note').value
              };
              try { const uid = auth.currentUser.uid; await addDoc(collection(db, "users", uid, "records"), r); closeModal(); btn.textContent = '儲存紀錄'; document.querySelectorAll('.input-lively').forEach(i=>i.value=''); } catch (e) { console.error(e); alert("儲存失敗"); btn.textContent = '儲存紀錄'; }
         };
 
-        // Data Logic
+        // --- Data Processing ---
         function parseFamilySettings() {
-             let membersStr = String(rawSettings.familyMembers || "本人");
-             familyMembers = membersStr.split(',').map(s => s.trim());
-             let cashArr = String(rawSettings.initialCashCost||"0").split(',').map(Number);
-             let investArr = String(rawSettings.initialInvestCost||"0").split(',').map(Number);
-             let monthArr = String(rawSettings.monthlyContribution||"0").split(',').map(Number);
-             let retireAgeArr = String(rawSettings.retirementAge||"60").split(',').map(Number);
-             let lifeExpArr = String(rawSettings.lifeExpectancy||"90").split(',').map(Number);
+             let membersStr = String(rawSettings.familyMembers || "本人"); familyMembers = membersStr.split(',').map(s => s.trim());
+             let cashArr = String(rawSettings.initialCashCost||"0").split(',').map(Number); let investArr = String(rawSettings.initialInvestCost||"0").split(',').map(Number); let monthArr = String(rawSettings.monthlyContribution||"0").split(',').map(Number); let retireAgeArr = String(rawSettings.retirementAge||"60").split(',').map(Number); let lifeExpArr = String(rawSettings.lifeExpectancy||"90").split(',').map(Number);
              memberSettings = {};
-             familyMembers.forEach((name, index) => {
-                 memberSettings[name] = {
-                     initialCash: cashArr[index] || 0, initialInvest: investArr[index] || 0, monthly: monthArr[index] || 0,
-                     retireAge: retireAgeArr[index] || 60, lifeExpectancy: lifeExpArr[index] || 90
-                 };
-             });
+             familyMembers.forEach((name, index) => { memberSettings[name] = { initialCash: cashArr[index] || 0, initialInvest: investArr[index] || 0, monthly: monthArr[index] || 0, retireAge: retireAgeArr[index] || 60, lifeExpectancy: lifeExpArr[index] || 90 }; });
         }
         function populateMemberSelects() {
-            const filterSel = document.getElementById('member-filter');
-            const inputSel = document.getElementById('inp-owner');
+            const filterSel = document.getElementById('member-filter'); const inputSel = document.getElementById('inp-owner');
             filterSel.innerHTML = '<option value="all">全體成員</option>'; inputSel.innerHTML = ''; 
             familyMembers.forEach(m => { const opt1 = document.createElement('option'); opt1.value = m; opt1.textContent = m; filterSel.appendChild(opt1); const opt2 = document.createElement('option'); opt2.value = m; opt2.textContent = m; inputSel.appendChild(opt2); });
             if (familyMembers.includes("本人")) { filterSel.value = "本人"; inputSel.value = "本人"; }
@@ -454,7 +404,6 @@
             renderFireProgressBar(filteredRecords.length > 0 ? filteredRecords[filteredRecords.length - 1] : null);
         };
 
-        // ... (calculateYTD, aggregateRecordsByDate, processSingleMemberData, calculateDerivedData logic same as previous) ...
         function calculateYTD(records) { records.forEach(r => { const currentYear = new Date(r.date).getFullYear(); const prevYearRecords = records.filter(p => new Date(p.date).getFullYear() === currentYear - 1); const prevYearRecord = prevYearRecords.length > 0 ? prevYearRecords[prevYearRecords.length - 1] : null; let lastYearTotal = 0, lastYearInvest = 0; if (prevYearRecord) { lastYearTotal = prevYearRecord._totalAssets; lastYearInvest = prevYearRecord._investAssets; } else { r._ytdTotalROI = 0; r._ytdInvestROI = 0; return; } r._ytdTotalROI = lastYearTotal > 0 ? ((r._totalAssets - lastYearTotal) / lastYearTotal) * 100 : 0; r._ytdInvestROI = lastYearInvest > 0 ? ((r._investAssets - lastYearInvest) / lastYearInvest) * 100 : 0; }); }
         function aggregateRecordsByDate(records, initInvest, initCash, monthly) { const grouped = {}; records.forEach(r => { const d = r.date; if (!grouped[d]) { grouped[d] = { date: d, owner: '全體合計', cash_tdcc:0, cash_cathay:0, cash_bot:0, funds_tdcc:0, tw_tdcc:0, tw_lending:0, us_cathay:0, us_schwab:0, crypto:0, us_rate: r.us_rate, note: r.note }; } const g = grouped[d]; g.cash_tdcc += (r.cash_tdcc||0); g.cash_cathay += (r.cash_cathay||0); g.cash_bot += (r.cash_bot||0); g.funds_tdcc += (r.funds_tdcc||0); g.tw_tdcc += (r.tw_tdcc||0); g.tw_lending += (r.tw_lending||0); g.us_cathay += (r.us_cathay||0); g.us_schwab += (r.us_schwab||0); g.crypto += (r.crypto||0); }); const result = Object.values(grouped).sort((a, b) => new Date(a.date) - new Date(b.date)); const startDate = result.length > 0 ? new Date(result[0].date) : new Date(); return result.map(r => calculateDerivedData(r, startDate, initInvest, initCash, monthly)); }
         function processSingleMemberData(records, initInvest, initCash, monthly) { if(records.length === 0) return; const startDate = new Date(records[0].date); records.forEach(r => { Object.assign(r, calculateDerivedData(r, startDate, initInvest, initCash, monthly)); }); }
@@ -463,8 +412,10 @@
         function renderOverview() {
             if (filteredRecords.length === 0) {
                 document.getElementById('val-total-assets').textContent = "0";
-                // ... clear UI ...
                 document.getElementById('table-body').innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-slate-400 font-bold">尚無資料</td></tr>`;
+                renderFireProgressBar(null);
+                if(charts.trend) charts.trend.destroy();
+                if(charts.alloc) charts.alloc.destroy();
                 return;
             }
             const latest = filteredRecords[filteredRecords.length - 1];
@@ -483,17 +434,171 @@
             renderTable();
             renderCharts(latest);
         }
-        
-        // ... (updateAnnualGoal, renderTable, renderCharts, initRetirementInputs, calcRetirement, renderFireProgressBar, formatMoney same as previous) ...
-        // Merged for brevity
-        function updateAnnualGoal(l){const cy=new Date(l.date).getFullYear();const py=cy-1;const rr=[...filteredRecords].reverse();const lyr=rr.find(r=>new Date(r.date).getFullYear()===py);const er=rawSettings.expectedReturn||0.08;const cmc=parseFloat(document.getElementById('retire-monthly').value)||0;document.getElementById('val-expected-return').textContent=(er*100).toFixed(1)+"%";let ba=0;let tt=`${cy} 年度目標`;if(lyr){ba=lyr._totalAssets;}else{const fr=filteredRecords.find(r=>new Date(r.date).getFullYear()===cy);if(fr){ba=fr._calcTotalCost||0;tt=`${cy} 年度目標 (基於成本)`;}}const ac=cmc*12;const ta=(ba+ac)*(1+er);const ca=l._totalAssets;const d=ta-ca;const p=ta>0?(ca/ta)*100:0;document.getElementById('goal-year-title').textContent=tt;document.getElementById('val-year-goal').textContent=formatMoney(Math.round(ta));document.getElementById('val-goal-percent').textContent=p.toFixed(1)+"%";document.getElementById('bar-goal-progress').style.width=Math.min(p,100)+"%";const de=document.getElementById('val-goal-diff');if(d>0){de.textContent="-"+formatMoney(Math.round(d));de.className="text-xl font-bold font-poppins text-rose-500 privacy-val";}else{de.textContent="+"+formatMoney(Math.round(Math.abs(d)));de.className="text-xl font-bold font-poppins text-emerald-500 privacy-val";}}
-        function renderFireProgressBar(l){if(!l)return;const g=parseFloat(rawSettings.retirementGoal)||20000000;const c=l._totalAssets;const mc=parseFloat(document.getElementById('retire-monthly').value)||0;const ar=parseFloat(document.getElementById('retire-rate').value)/100||0.06;const mr=ar/12;document.getElementById('fire-goal-text').textContent=`目標: ${formatMoney(g)}`;let p=(c/g)*100;if(p>100)p=100;document.getElementById('fire-percent').textContent=p.toFixed(1)+"%";document.getElementById('fire-bar').style.width=p+"%";if(c>=g){document.getElementById('fire-prediction').innerHTML="<span class='text-emerald-300 font-bold'>已達成！🎉</span>";}else{let t=c;let m=0;while(t<g&&m<1200){t=t*(1+mr)+mc;m++;}if(m>=1200)document.getElementById('fire-prediction').innerHTML="遙遙無期";else{const d=new Date();const td=new Date(d.getFullYear(),d.getMonth()+m,d.getDate());document.getElementById('fire-prediction').innerHTML=`預計 <span class="text-white font-bold text-lg">${td.getFullYear()}年 ${td.getMonth()+1}月</span> 達成`;}}}
-        function renderTable(){const tb=document.getElementById('table-body');tb.innerHTML='';const s=[...filteredRecords].reverse();const tp=Math.ceil(s.length/ITEMS_PER_PAGE);if(currentPage<1)currentPage=1;if(currentPage>tp&&tp>0)currentPage=tp;const pd=s.slice((currentPage-1)*ITEMS_PER_PAGE,currentPage*ITEMS_PER_PAGE);pd.forEach(r=>{const tr=document.createElement('tr');tr.className="hover:bg-slate-50 transition-colors border-b border-slate-50 group";const ic=r._ytdInvestROI>=0?'text-emerald-600 bg-emerald-50':'text-rose-600 bg-rose-50';const tc=r._ytdTotalROI>=0?'text-blue-600 bg-blue-50':'text-rose-600 bg-rose-50';tr.innerHTML=`<td class="px-6 py-4 whitespace-nowrap text-slate-600 font-bold">${r.date}</td><td class="px-6 py-4 whitespace-nowrap"><span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 group-hover:bg-white group-hover:shadow-sm transition-all">${r.owner||'全體'}</span></td><td class="px-6 py-4 text-right font-bold font-poppins text-slate-700 privacy-val">${formatMoney(r._totalAssets)}</td><td class="px-6 py-4 text-right text-xs text-indigo-400 font-poppins font-medium privacy-val">${formatMoney(r._calcInvestCost)}</td><td class="px-6 py-4 text-center"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${tc}">${r._ytdTotalROI.toFixed(1)}%</span></td><td class="px-6 py-4 text-center"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${ic}">${r._ytdInvestROI.toFixed(1)}%</span></td><td class="px-6 py-4 text-xs text-slate-400 truncate max-w-[150px]">${r.note||'-'}</td>`;tb.appendChild(tr);});document.getElementById('pagination-info').textContent=`Page ${currentPage} of ${tp||1}`;document.getElementById('btn-prev').disabled=currentPage<=1;document.getElementById('btn-next').disabled=currentPage>=tp;}
-        function renderCharts(l){const ct=document.getElementById('chart-trend').getContext('2d');if(charts.trend)charts.trend.destroy();const gt=ct.createLinearGradient(0,0,0,400);gt.addColorStop(0,'rgba(79,70,229,0.2)');gt.addColorStop(1,'rgba(79,70,229,0)');const gi=ct.createLinearGradient(0,0,0,400);gi.addColorStop(0,'rgba(245,158,11,0.2)');gi.addColorStop(1,'rgba(245,158,11,0)');charts.trend=new Chart(ct,{type:'line',data:{labels:filteredRecords.map(d=>d.date),datasets:[{label:'總資產',data:filteredRecords.map(d=>d._totalAssets),borderColor:'#4f46e5',backgroundColor:gt,fill:true,tension:0.4,pointRadius:2},{label:'投資資產',data:filteredRecords.map(d=>d._investAssets),borderColor:'#f59e0b',backgroundColor:gi,fill:true,tension:0.4,pointRadius:2}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>(v/10000).toFixed(0)+'萬'}}}}});const ca=document.getElementById('chart-allocation').getContext('2d');if(charts.alloc)charts.alloc.destroy();charts.alloc=new Chart(ca,{type:'doughnut',plugins:[ChartDataLabels],data:{labels:['現金','台股','美股','基金','加密'],datasets:[{data:[l._cashAssets,(l.tw_tdcc||0)+(l.tw_lending||0),((l.us_cathay||0)+(l.us_schwab||0))*l.us_rate,l.funds_tdcc||0,(l.crypto||0)*l.us_rate],backgroundColor:['#94a3b8','#ef4444','#3b82f6','#f59e0b','#fcd34d'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'75%',layout:{padding:{bottom:10}},plugins:{legend:{display:true,position:'bottom',labels:{usePointStyle:true,padding:20,font:{family:"'Poppins', sans-serif",size:11,weight:'bold'},color:'#475569'}},datalabels:{color:'#fff',formatter:(v,c)=>{let s=0;c.chart.data.datasets[0].data.map(d=>s+=d);return (v*100/s).toFixed(0)+"%"},font:{weight:'bold',size:11}}}}});}
-        function initRetirementInputs(){const l=filteredRecords.length>0?filteredRecords[filteredRecords.length-1]._totalAssets:0;document.getElementById('retire-current').value=formatMoney(l);if(rawSettings.retirementGoal)document.getElementById('retire-goal').value=rawSettings.retirementGoal;if(rawSettings.expectedReturn){let r=rawSettings.expectedReturn;if(r<1)r=r*100;document.getElementById('retire-rate').value=r;}if(rawSettings.inflationRate)document.getElementById('retire-inflation').value=rawSettings.inflationRate;if(rawSettings.currentAge)document.getElementById('retire-age').value=rawSettings.currentAge;calcRetirement();}
-        window.calcRetirement=function(){const c=parseFloat(document.getElementById('retire-current').value.replace(/,/g,''))||0;const m=parseFloat(document.getElementById('retire-monthly').value)||0;const r=parseFloat(document.getElementById('retire-rate').value)/100;const i=parseFloat(document.getElementById('retire-inflation').value)/100;const ca=parseInt(document.getElementById('retire-age').value)||30;const ta=parseInt(document.getElementById('retire-age-target').value)||60;const tl=parseInt(document.getElementById('retire-life-expectancy').value)||90;let fv=c;let dn=[c];let lbs=[ca+'歲'];let low=0,high=1000000;let ow=0;for(let k=0;k<20;k++){let mid=(low+high)/2;let b=c;let ok=true;for(let a=ca+1;a<=tl;a++){if(a<=ta){for(let x=0;x<12;x++)b=(b+m)*(1+r/12);}else{let yp=a-ta;let w=mid*Math.pow(1+i,yp);for(let x=0;x<12;x++)b=b*(1+r/12)-w;}if(b<0){ok=false;break;}}if(ok){ow=mid;low=mid;}else{high=mid;}}fv=c;dn=[c];lbs=[ca+'歲'];let ro=null;let ra=0;for(let a=ca+1;a<=100;a++){if(a<=ta){for(let x=0;x<12;x++)fv=(fv+m)*(1+r/12);}else{let yp=a-ta;let w=ow*Math.pow(1+i,yp);for(let x=0;x<12;x++)fv=fv*(1+r/12)-w;}if(fv<0){fv=0;if(!ro)ro=a;}if(a===ta)ra=fv;dn.push(Math.round(fv));lbs.push(a+'歲');}document.getElementById('retire-monthly-withdraw-display').textContent=formatMoney(Math.round(ow))+" 元";document.getElementById('retire-result-out').textContent=`${tl} 歲歸零`;document.getElementById('val-at-retire').textContent=formatMoney(Math.round(ra));const sb=document.getElementById('retire-status-badge');sb.innerHTML='<i class="fa-solid fa-check-circle text-emerald-500"></i> <span class="text-emerald-600">試算完成</span>';sb.className="px-4 py-2 rounded-xl bg-emerald-50 font-bold text-sm flex items-center gap-2";const ctx=document.getElementById('chart-retirement').getContext('2d');if(charts.retire)charts.retire.destroy();charts.retire=new Chart(ctx,{type:'line',data:{labels:lbs,datasets:[{label:'名目資產',data:dn,borderColor:'#6366f1',backgroundColor:(c)=>{const ctx=c.chart.ctx;const g=ctx.createLinearGradient(0,0,0,300);g.addColorStop(0,'rgba(99,102,241,0.5)');g.addColorStop(1,'rgba(99,102,241,0)');return g},fill:true,pointRadius:0,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{ticks:{callback:v=>(v/10000).toFixed(0)+'萬'}}},interaction:{mode:'index',intersect:false},plugins:{annotation:{annotations:{line1:{type:'line',xMin:ta-ca,xMax:ta-ca,borderColor:'rgb(255,99,132)',borderWidth:2,label:{content:'退休',enabled:true,position:'start'}}}}}}});}
-        function formatMoney(num) { return new Intl.NumberFormat('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}).format(num); }
 
+        function updateAnnualGoal(latest) {
+            const currentYear = new Date(latest.date).getFullYear();
+            const prevYear = currentYear - 1;
+            const reversedRecords = [...filteredRecords].reverse();
+            const lastYearRecord = reversedRecords.find(r => new Date(r.date).getFullYear() === prevYear);
+            const expectedReturn = rawSettings.expectedReturn || 0.08;
+            const currentMonthlyContrib = parseFloat(document.getElementById('retire-monthly').value) || 0;
+            document.getElementById('val-expected-return').textContent = (expectedReturn * 100).toFixed(1) + "%";
+            let baseAmount = 0; let targetTitle = `${currentYear} 年度目標`;
+            if (lastYearRecord) { baseAmount = lastYearRecord._totalAssets; } 
+            else { const firstRecordThisYear = filteredRecords.find(r => new Date(r.date).getFullYear() === currentYear); if (firstRecordThisYear) { baseAmount = firstRecordThisYear._calcTotalCost || 0; targetTitle = `${currentYear} 年度目標 (基於成本)`; } }
+            const annualContrib = currentMonthlyContrib * 12;
+            const targetAmount = (baseAmount + annualContrib) * (1 + expectedReturn);
+            const currentAmount = latest._totalAssets;
+            const diff = targetAmount - currentAmount;
+            const progress = targetAmount > 0 ? (currentAmount / targetAmount) * 100 : 0;
+            document.getElementById('goal-year-title').textContent = targetTitle;
+            document.getElementById('val-year-goal').textContent = formatMoney(Math.round(targetAmount));
+            document.getElementById('val-goal-percent').textContent = progress.toFixed(1) + "%";
+            document.getElementById('bar-goal-progress').style.width = Math.min(progress, 100) + "%";
+            const diffEl = document.getElementById('val-goal-diff');
+            if (diff > 0) { diffEl.textContent = "-" + formatMoney(Math.round(diff)); diffEl.className = "text-xl font-bold font-poppins text-rose-500 privacy-val"; } 
+            else { diffEl.textContent = "+" + formatMoney(Math.round(Math.abs(diff))); diffEl.className = "text-xl font-bold font-poppins text-emerald-500 privacy-val"; }
+        }
+
+        function renderFireProgressBar(latest) {
+            if (!latest) return;
+            const goal = parseFloat(rawSettings.retirementGoal) || 20000000;
+            const current = latest._totalAssets;
+            const monthlyContrib = parseFloat(document.getElementById('retire-monthly').value) || 0;
+            const annualRate = parseFloat(document.getElementById('retire-rate').value) / 100 || 0.06;
+            const monthlyRate = annualRate / 12;
+            document.getElementById('fire-goal-text').textContent = `目標: ${formatMoney(goal)}`;
+            let percent = (current / goal) * 100; if (percent > 100) percent = 100;
+            document.getElementById('fire-percent').textContent = percent.toFixed(1) + "%";
+            document.getElementById('fire-bar').style.width = percent + "%";
+            if (current >= goal) { document.getElementById('fire-prediction').innerHTML = "<span class='text-emerald-300 font-bold'>已達成！🎉</span>"; } 
+            else {
+                let tempAmount = current; let monthsToGo = 0; let maxMonths = 1200; 
+                while (tempAmount < goal && monthsToGo < maxMonths) { tempAmount = tempAmount * (1 + monthlyRate) + monthlyContrib; monthsToGo++; }
+                if (monthsToGo >= maxMonths) { document.getElementById('fire-prediction').innerHTML = "遙遙無期"; } 
+                else { const today = new Date(); const targetDate = new Date(today.getFullYear(), today.getMonth() + monthsToGo, today.getDate()); document.getElementById('fire-prediction').innerHTML = `預計 <span class="text-white font-bold text-lg">${targetDate.getFullYear()}年 ${targetDate.getMonth() + 1}月</span> 達成`; }
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            const sorted = [...filteredRecords].reverse();
+            const totalPages = Math.ceil(sorted.length / ITEMS_PER_PAGE);
+            if(currentPage < 1) currentPage = 1;
+            if(currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+            const pageData = sorted.slice((currentPage-1)*ITEMS_PER_PAGE, currentPage*ITEMS_PER_PAGE);
+            pageData.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-50 group";
+                const invRoiColor = r._ytdInvestROI>=0?'text-emerald-600 bg-emerald-50':'text-rose-600 bg-rose-50';
+                const totRoiColor = r._ytdTotalROI>=0?'text-blue-600 bg-blue-50':'text-rose-600 bg-rose-50';
+                tr.innerHTML = `<td class="px-6 py-4 whitespace-nowrap text-slate-600 font-bold">${r.date}</td><td class="px-6 py-4 whitespace-nowrap"><span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 group-hover:bg-white group-hover:shadow-sm transition-all">${r.owner||'全體'}</span></td><td class="px-6 py-4 text-right font-bold font-poppins text-slate-700 privacy-val">${formatMoney(r._totalAssets)}</td><td class="px-6 py-4 text-right text-xs text-indigo-400 font-poppins font-medium privacy-val">${formatMoney(r._calcInvestCost)}</td><td class="px-6 py-4 text-center"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${totRoiColor}">${r._ytdTotalROI.toFixed(1)}%</span></td><td class="px-6 py-4 text-center"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${invRoiColor}">${r._ytdInvestROI.toFixed(1)}%</span></td><td class="px-6 py-4 text-xs text-slate-400 truncate max-w-[150px]">${r.note||'-'}</td>`;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('pagination-info').textContent = `Page ${currentPage} of ${totalPages||1}`;
+            document.getElementById('btn-prev').disabled = currentPage <= 1;
+            document.getElementById('btn-next').disabled = currentPage >= totalPages;
+        }
+        function changePage(d) { currentPage += d; renderTable(); }
+
+        function renderCharts(latest) {
+            const ctxT = document.getElementById('chart-trend').getContext('2d');
+            if(charts.trend) charts.trend.destroy();
+            const gradTotal = ctxT.createLinearGradient(0,0,0,400); gradTotal.addColorStop(0,'rgba(79,70,229,0.2)'); gradTotal.addColorStop(1,'rgba(79,70,229,0)');
+            const gradInvest = ctxT.createLinearGradient(0,0,0,400); gradInvest.addColorStop(0,'rgba(245, 158, 11, 0.2)'); gradInvest.addColorStop(1,'rgba(245, 158, 11, 0)');
+            charts.trend = new Chart(ctxT, {
+                type: 'line',
+                data: {
+                    labels: filteredRecords.map(d=>d.date),
+                    datasets: [{label:'總資產', data:filteredRecords.map(d=>d._totalAssets), borderColor:'#4f46e5', backgroundColor:gradTotal, fill:true, tension:0.4, pointRadius:2}, {label:'投資資產', data:filteredRecords.map(d=>d._investAssets), borderColor:'#f59e0b', backgroundColor:gradInvest, fill:true, tension:0.4, pointRadius:2}]
+                },
+                options: { responsive:true, maintainAspectRatio:false, scales:{x:{grid:{display:false}}, y:{ticks:{callback:v=>(v/10000).toFixed(0)+'萬'}}} }
+            });
+            const ctxA = document.getElementById('chart-allocation').getContext('2d');
+            if(charts.alloc) charts.alloc.destroy();
+            charts.alloc = new Chart(ctxA, {
+                type: 'doughnut', plugins:[ChartDataLabels],
+                data: {
+                    labels: ['現金','台股','美股','基金','加密'],
+                    datasets: [{
+                        data: [latest._cashAssets, (latest.tw_tdcc||0)+(latest.tw_lending||0), ((latest.us_cathay||0)+(latest.us_schwab||0))*latest.us_rate, latest.funds_tdcc||0, (latest.crypto||0)*latest.us_rate],
+                        backgroundColor: ['#94a3b8','#ef4444','#3b82f6','#f59e0b','#fcd34d'], borderWidth:0, hoverOffset: 4
+                    }]
+                },
+                options: { responsive:true, maintainAspectRatio:false, cutout:'75%', layout:{padding:{bottom:10}}, plugins:{legend:{display:true, position:'bottom', labels:{usePointStyle:true, padding:20, font:{family:"'Poppins', sans-serif", size:11, weight:'bold'}, color:'#475569'}}, datalabels:{color:'#fff', formatter:(v,c)=>{let s=0;c.chart.data.datasets[0].data.map(d=>s+=d);return (v*100/s).toFixed(0)+"%"}, font:{weight:'bold',size:11}}} }
+            });
+        }
+
+        window.calcRetirement = function() {
+            const current = parseFloat(document.getElementById('retire-current').value.replace(/,/g,''))||0;
+            const monthlyContrib = parseFloat(document.getElementById('retire-monthly').value) || 0;
+            const rate = parseFloat(document.getElementById('retire-rate').value)/100;
+            const inflation = parseFloat(document.getElementById('retire-inflation').value)/100;
+            const currentAge = parseInt(document.getElementById('retire-age').value) || 30;
+            const targetAge = parseInt(document.getElementById('retire-age-target').value) || 60;
+            const targetLifeExpectancy = parseInt(document.getElementById('retire-life-expectancy').value) || 90;
+            const goal = parseFloat(document.getElementById('retire-goal').value) || 0;
+
+            let fv = current; let dataNominal=[current]; let labels=[currentAge+'歲'];
+            let low = 0, high = 1000000; let optimalWithdrawal = 0;
+            
+            for(let iter=0; iter<20; iter++) { 
+                let mid = (low + high) / 2; let balance = current; let ok = true;
+                for(let age = currentAge + 1; age <= targetLifeExpectancy; age++) {
+                     if (age <= targetAge) { for(let m=0; m<12; m++) balance = (balance + monthlyContrib) * (1 + rate/12); } 
+                     else {
+                        let yearsPassed = age - targetAge; 
+                        let monthlyWithInflation = mid * Math.pow(1 + inflation, yearsPassed);
+                        for(let m=0; m<12; m++) balance = balance * (1 + rate/12) - monthlyWithInflation;
+                     }
+                     if (balance < 0) { ok = false; break; }
+                }
+                if (ok) { optimalWithdrawal = mid; low = mid; } else { high = mid; }
+            }
+            
+            fv = current; dataNominal = [current]; labels = [currentAge+'歲'];
+            let runOutAge = null; let retireAsset = 0;
+
+            for(let age = currentAge + 1; age <= 100; age++) { 
+                if (age <= targetAge) { for(let m=0; m<12; m++) fv = (fv + monthlyContrib) * (1 + rate/12); } 
+                else {
+                    let yearsPassed = age - targetAge;
+                    let monthlyWithInflation = optimalWithdrawal * Math.pow(1 + inflation, yearsPassed);
+                    for(let m=0; m<12; m++) fv = fv * (1 + rate/12) - monthlyWithInflation;
+                }
+                if (fv < 0) { fv = 0; if(!runOutAge) runOutAge = age; }
+                if (age === targetAge) retireAsset = fv;
+                dataNominal.push(Math.round(fv)); labels.push(age+'歲');
+            }
+
+            document.getElementById('retire-monthly-withdraw-display').textContent = formatMoney(Math.round(optimalWithdrawal)) + " 元";
+            document.getElementById('retire-result-out').textContent = `${targetLifeExpectancy} 歲歸零`;
+            document.getElementById('val-at-retire').textContent = formatMoney(Math.round(retireAsset));
+            
+            const statusBadge = document.getElementById('retire-status-badge');
+            statusBadge.innerHTML = '<i class="fa-solid fa-check-circle text-emerald-500"></i> <span class="text-emerald-600">試算完成</span>';
+            statusBadge.className = "px-4 py-2 rounded-xl bg-emerald-50 font-bold text-sm flex items-center gap-2";
+
+            const ctx = document.getElementById('chart-retirement').getContext('2d');
+            if(charts.retire) charts.retire.destroy();
+            charts.retire = new Chart(ctx, {
+                type:'line', data:{labels:labels, datasets:[{label:'名目資產', data:dataNominal, borderColor:'#6366f1', backgroundColor:(ctx)=>{const c=ctx.chart.ctx;const g=c.createLinearGradient(0,0,0,300);g.addColorStop(0,'rgba(99,102,241,0.5)');g.addColorStop(1,'rgba(99,102,241,0)');return g}, fill:true, pointRadius:0, borderWidth:2}]},
+                options:{responsive:true, maintainAspectRatio:false, scales:{y:{ticks:{callback:v=>(v/10000).toFixed(0)+'萬'}}}, interaction:{mode:'index', intersect:false}, plugins:{annotation:{annotations:{line1:{type:'line',xMin:targetAge-currentAge,xMax:targetAge-currentAge,borderColor:'rgb(255,99,132)',borderWidth:2,label:{content:'退休',enabled:true,position:'start'}}}}}}
+            });
+        }
+
+        function initRetirementInputs() {
+            const latest = filteredRecords.length > 0 ? filteredRecords[filteredRecords.length-1]._totalAssets : 0;
+            document.getElementById('retire-current').value = formatMoney(latest);
+            if(rawSettings.retirementGoal) document.getElementById('retire-goal').value = rawSettings.retirementGoal;
+            if(rawSettings.expectedReturn) { let r = rawSettings.expectedReturn; if(r < 1) r = r * 100; document.getElementById('retire-rate').value = r; }
+            if(rawSettings.inflationRate) document.getElementById('retire-inflation').value = rawSettings.inflationRate;
+            if(rawSettings.currentAge) document.getElementById('retire-age').value = rawSettings.currentAge;
+            calcRetirement();
+        }
+
+        function formatMoney(num) { return new Intl.NumberFormat('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}).format(num); }
     </script>
 </body>
 </html>
