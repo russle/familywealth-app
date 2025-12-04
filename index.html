@@ -348,7 +348,7 @@
         function handleSettingsImport(evt) {
             const file = evt.target.files[0];
             Papa.parse(file, {
-                header: true, skipEmptyLines: true, encoding: 'utf8', // ★★★ Fix Encoding for Settings ★★★
+                header: true, skipEmptyLines: true, encoding: 'big5', // ★★★ Fix Encoding for Settings ★★★
                 complete: async function(results) {
                     const data = results.data;
                     const uid = auth.currentUser.uid;
@@ -374,7 +374,7 @@
         function handleRecordsImport(evt) {
             const file = evt.target.files[0];
             Papa.parse(file, {
-                header: true, skipEmptyLines: true, encoding: 'utf8', // ★★★ Fix Encoding for Records ★★★
+                header: true, skipEmptyLines: true, encoding: 'big5', // ★★★ Fix Encoding for Records ★★★
                 complete: async function(results) {
                     const data = results.data;
                     const uid = auth.currentUser.uid;
