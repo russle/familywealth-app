@@ -20,38 +20,24 @@
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
         .font-poppins { font-family: 'Poppins', sans-serif; }
-        
-        /* Glassmorphism */
         .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(226, 232, 240, 0.8); }
         .lively-card { background: white; border-radius: 1.5rem; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; }
         .lively-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border-color: #e2e8f0; }
-        
-        /* Inputs */
         .input-lively { width: 100%; border: 2px solid #f1f5f9; border-radius: 1rem; padding: 0.6rem 1rem; font-weight: 600; color: #334155; transition: all 0.2s; background-color: #f8fafc; }
         .input-lively:focus { outline: none; background-color: white; border-color: #818cf8; box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.1); }
         .input-lively:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
-        
-        /* Privacy Mode */
         body.privacy-mode .privacy-val { filter: blur(8px); opacity: 0.6; user-select: none; transition: all 0.3s ease; }
-
-        /* ★★★ 修正：移除 display: flex，只保留定位 ★★★ */
-        #login-overlay { 
-            position: fixed; 
-            inset: 0; 
-            z-index: 100; 
-            background: rgba(255,255,255,0.98); 
-        }
-        
-        /* Animations */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
         .animate-enter { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
         @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        #login-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(255,255,255,0.98); }
     </style>
 </head>
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden bg-slate-50">
 
-    <!-- Login Screen -->
-    <!-- ★★★ 修正：在此處加上 flex 類別 ★★★ -->
     <div id="login-overlay" class="flex flex-col justify-center items-center">
         <div class="text-center mb-8 animate-enter">
             <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center text-white text-4xl shadow-xl mx-auto mb-4 shadow-indigo-500/30"><i class="fa-solid fa-shield-cat"></i></div>
@@ -69,7 +55,6 @@
         </div>
     </div>
 
-    <!-- Navbar -->
     <header class="glass-nav z-30 sticky top-0 hidden" id="app-header">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row justify-between md:h-18 py-3 md:py-0 gap-3 md:gap-0 items-center">
@@ -103,19 +88,17 @@
     <main id="app-main" class="flex-grow overflow-y-auto custom-scrollbar p-4 sm:p-6 relative hidden">
         <div class="max-w-7xl mx-auto space-y-8 pb-12">
             
-            <!-- Import Section -->
             <div id="import-section" class="hidden bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-xl mb-6 shadow-sm animate-enter">
                 <div class="flex items-start gap-4">
                     <div class="p-3 bg-blue-100 rounded-full text-blue-600"><i class="fa-solid fa-file-csv text-xl"></i></div>
                     <div class="flex-grow">
                         <h3 class="font-bold text-blue-800 text-lg mb-1">初始化資料庫</h3>
-                        <p class="text-sm text-blue-600 mb-4">檢測到您的資料庫為空。請選擇 <strong>Records.csv</strong> 檔案以匯入舊資料。</p>
+                        <p class="text-sm text-blue-600 mb-4">檢測到您的資料庫為空。請選擇您的 <strong>Records.csv</strong> 檔案以匯入舊資料。</p>
                         <input type="file" id="csv-file-input" accept=".csv" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"/>
                     </div>
                 </div>
             </div>
 
-            <!-- Loading -->
             <div id="initial-loader" class="flex flex-col items-center justify-center h-[60vh]">
                 <div class="relative w-20 h-20"><div class="absolute inset-0 border-4 border-indigo-100 rounded-full animate-ping"></div><div class="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>
                 <p class="mt-6 text-slate-500 font-bold tracking-wide animate-pulse">正在連線至 Firebase...</p>
@@ -123,7 +106,6 @@
 
             <!-- Overview View -->
             <div id="view-overview" class="hidden space-y-6 animate-enter">
-                <!-- 1. KPI Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div class="lively-card p-6 relative overflow-hidden group md:col-span-2">
                         <div class="relative z-10">
@@ -133,19 +115,17 @@
                         </div>
                         <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-indigo-50 rounded-full opacity-50 group-hover:scale-125 transition-transform duration-500"></div>
                     </div>
-                    <!-- YTD Total -->
                     <div class="lively-card p-6 relative overflow-hidden group border-0 ring-2 ring-slate-100">
                         <div class="relative z-10">
                             <div class="flex items-center gap-2 mb-2"><p class="text-slate-500 text-xs font-bold uppercase tracking-wider">總資產成長 (YTD)</p></div>
                             <h3 class="text-2xl font-bold font-poppins tracking-tight text-slate-700" id="val-total-roi">---%</h3>
                             <div class="mt-4 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden relative"><div id="bar-total-roi" class="absolute top-0 left-0 h-full bg-slate-400 rounded-full transition-all duration-1000" style="width: 0%"></div></div>
-                            <p class="mt-2 text-[10px] text-slate-400 text-right font-medium">資產變動率</p>
+                            <p class="mt-2 text-[10px] text-slate-400 text-right font-medium opacity-80">資產變動率</p>
                         </div>
                     </div>
-                    <!-- YTD Invest -->
                     <div class="lively-card p-0 relative overflow-hidden group border-0 ring-4 ring-indigo-50 ring-offset-2">
-                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-700"></div>
                         <div class="relative z-10 p-6 text-white">
+                            <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-700 -z-10"></div>
                             <div class="flex items-center gap-2 mb-2"><p class="text-indigo-100 text-xs font-bold uppercase tracking-wider">投資成長 (YTD)</p></div>
                             <h3 class="text-2xl font-bold font-poppins tracking-tight" id="val-invest-roi">---%</h3>
                             <div class="mt-4 relative h-1.5 w-full bg-white/20 rounded-full overflow-hidden backdrop-blur-sm"><div id="bar-invest-roi" class="absolute top-0 left-0 h-full bg-white rounded-full transition-all duration-1000" style="width: 0%"></div></div>
@@ -154,7 +134,6 @@
                     </div>
                 </div>
                 
-                <!-- 2. FIRE & Goal -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="lively-card p-6 bg-gradient-to-r from-slate-800 to-indigo-900 text-white relative overflow-hidden border-0 shadow-xl shadow-indigo-900/20">
                         <div class="relative z-10">
@@ -176,7 +155,6 @@
                     </div>
                 </div>
 
-                <!-- 3. Charts -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 lively-card p-6">
                         <div class="flex items-center justify-between mb-6"><h3 class="font-bold text-slate-700 flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></span> 資產趨勢</h3><div class="text-xs bg-slate-100 px-3 py-1.5 rounded-lg text-slate-500 font-bold flex items-center gap-1"><i class="fa-solid fa-dollar-sign text-xs"></i> <span id="val-latest-rate-card">--</span></div></div>
@@ -188,7 +166,6 @@
                     </div>
                 </div>
 
-                <!-- 4. Table -->
                 <div class="lively-card overflow-hidden flex flex-col">
                     <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                         <h3 class="font-bold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> 歷史紀錄</h3>
@@ -270,7 +247,6 @@
 
         let app, db, auth, provider;
         try {
-            // Basic Config Check
             if (firebaseConfig.apiKey.includes("YOUR_API_KEY")) {
                 throw new Error("請填入真實的 Firebase Config！");
             }
@@ -287,21 +263,19 @@
             document.getElementById('config-status').classList.replace('text-slate-500', 'text-red-600');
         }
 
-        // Global Variables
         let rawRecords = [], filteredRecords = [], familyMembers = ["本人", "大女兒", "小女兒"], memberSettings = {}, charts = {}, currentPage = 1, isPrivacy = false;
         const ITEMS_PER_PAGE = 12;
         let rawSettings = { 
             retirementGoal: 20000000, expectedReturn: 0.08, defaultExchangeRate: 31.5, 
             useAutoRate: false, currentAge: 43, inflationRate: 2,
             familyMembers: "本人,大女兒,小女兒",
-            initialCashCost: "1500000, 10000, 10000",
+            initialCashCost: "670000, 200000, 100000",
             initialInvestCost: "1830000, 455173, 162000",
             monthlyContribution: "36000, 5000, 10000",
             retirementAge: "60, 60, 60",
             lifeExpectancy: "90, 90, 90"
         };
 
-        // --- Auth ---
         window.loginWithGoogle = () => {
             if(!auth) return alert("Firebase 未正確初始化");
             signInWithPopup(auth, provider).catch(error => {
@@ -309,9 +283,6 @@
                 const status = document.getElementById('login-error');
                 status.textContent = `登入失敗: ${error.code} - ${error.message}`;
                 status.classList.remove('hidden');
-                if(error.code === 'auth/unauthorized-domain') {
-                    alert("請至 Firebase Console > Authentication > Settings > Authorized domains 新增目前網址！");
-                }
             });
         };
 
@@ -331,51 +302,28 @@
             });
         }
 
-        // --- CSV Import ---
         document.getElementById('csv-file-input').addEventListener('change', handleFileSelect, false);
         function handleFileSelect(evt) {
             const file = evt.target.files[0];
             Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
+                header: true, skipEmptyLines: true,
                 complete: async function(results) {
                     const data = results.data;
                     const uid = auth.currentUser.uid;
                     const batchPromises = [];
-                    
-                    // Find headers ignoring case
-                    const getVal = (row, keys) => {
-                        const key = Object.keys(row).find(k => keys.some(x => k.toLowerCase().includes(x.toLowerCase())));
-                        return key ? row[key] : "";
-                    };
-
+                    const getVal = (row, keys) => { const key = Object.keys(row).find(k => keys.some(x => k.toLowerCase().includes(x.toLowerCase()))); return key ? row[key] : ""; };
                     for (let row of data) {
                          let newRec = {
-                            date: getVal(row, ['date', '日期']),
-                            owner: getVal(row, ['owner', '擁有人']) || '本人',
-                            cash_tdcc: cleanNum(getVal(row, ['cash_tdcc', '集保'])),
-                            cash_cathay: cleanNum(getVal(row, ['cash_cathay', '國泰'])),
-                            cash_bot: cleanNum(getVal(row, ['cash_bot', '台銀'])),
-                            funds_tdcc: cleanNum(getVal(row, ['funds', '基金'])),
-                            tw_tdcc: cleanNum(getVal(row, ['tw_tdcc', '台股'])),
-                            tw_lending: cleanNum(getVal(row, ['lending', '出借'])),
-                            us_cathay: cleanNum(getVal(row, ['us_cathay', '美股-國泰'])),
-                            us_schwab: cleanNum(getVal(row, ['schwab', '嘉信'])),
-                            crypto: cleanNum(getVal(row, ['crypto', '虛擬'])),
-                            us_rate: cleanNum(getVal(row, ['rate', '匯率'])),
-                            note: getVal(row, ['note', '備註'])
+                            date: getVal(row, ['date', '日期']), owner: getVal(row, ['owner', '擁有人']) || '本人',
+                            cash_tdcc: cleanNum(getVal(row, ['cash_tdcc', '集保'])), cash_cathay: cleanNum(getVal(row, ['cash_cathay', '國泰'])), cash_bot: cleanNum(getVal(row, ['cash_bot', '台銀'])),
+                            funds_tdcc: cleanNum(getVal(row, ['funds', '基金'])), tw_tdcc: cleanNum(getVal(row, ['tw_tdcc', '台股'])), tw_lending: cleanNum(getVal(row, ['lending', '出借'])),
+                            us_cathay: cleanNum(getVal(row, ['us_cathay', '美股-國泰'])), us_schwab: cleanNum(getVal(row, ['schwab', '嘉信'])), crypto: cleanNum(getVal(row, ['crypto', '虛擬'])),
+                            us_rate: cleanNum(getVal(row, ['rate', '匯率'])), note: getVal(row, ['note', '備註'])
                         };
-                        // Simple validation
                         if(newRec.date) batchPromises.push(addDoc(collection(db, "users", uid, "records"), newRec));
                     }
-                    
-                    if(batchPromises.length > 0) {
-                        await Promise.all(batchPromises);
-                        alert(`成功匯入 ${batchPromises.length} 筆資料！`);
-                        document.getElementById('import-section').classList.add('hidden');
-                    } else {
-                        alert("未找到有效資料，請檢查 CSV 格式");
-                    }
+                    if(batchPromises.length > 0) { await Promise.all(batchPromises); alert(`成功匯入 ${batchPromises.length} 筆資料！`); document.getElementById('import-section').classList.add('hidden'); }
+                    else { alert("未找到有效資料"); }
                 }
             });
         }
@@ -384,8 +332,6 @@
         async function initApp(uid) {
             document.getElementById('initial-loader').classList.remove('hidden');
             const recordsRef = collection(db, "users", uid, "records");
-            
-            // Check for data (one-time)
             const snap = await getDocs(recordsRef);
             if (snap.empty) { document.getElementById('import-section').classList.remove('hidden'); }
             
@@ -395,14 +341,12 @@
                 snapshot.forEach((doc) => { rawRecords.push({ id: doc.id, ...doc.data() }); });
                 document.getElementById('initial-loader').classList.add('hidden');
                 document.getElementById('view-overview').classList.remove('hidden');
-                
                 parseFamilySettings();
                 populateMemberSelects();
                 window.filterData();
             });
         }
 
-        // --- UI Logic ---
         window.togglePrivacy = function() { isPrivacy = !isPrivacy; document.body.classList.toggle('privacy-mode', isPrivacy); const iconClass = isPrivacy ? "fa-eye-slash" : "fa-eye"; document.getElementById('privacy-icon-desktop').className = `fa-solid ${iconClass}`; document.getElementById('privacy-icon-mobile').className = `fa-solid ${iconClass}`; };
         window.openModal = function() { document.getElementById('modal-add').classList.remove('hidden'); document.getElementById('inp-date').valueAsDate = new Date(); };
         window.closeModal = function() { document.getElementById('modal-add').classList.add('hidden'); };
@@ -413,29 +357,15 @@
         window.submitRecord = async function() {
              const btn=document.getElementById('btn-save'); btn.textContent='處理中...';
              const r = {
-                date: document.getElementById('inp-date').value,
-                owner: document.getElementById('inp-owner').value,
-                cash_tdcc: Number(document.getElementById('inp-cash-tdcc').value),
-                cash_cathay: Number(document.getElementById('inp-cash-cathay').value),
-                cash_bot: Number(document.getElementById('inp-cash-bot').value),
-                funds_tdcc: Number(document.getElementById('inp-funds').value),
-                tw_tdcc: Number(document.getElementById('inp-stock-tw').value),
-                tw_lending: Number(document.getElementById('inp-stock-lending').value),
-                us_cathay: Number(document.getElementById('inp-stock-us-cathay').value),
-                us_schwab: Number(document.getElementById('inp-stock-us-schwab').value),
-                crypto: Number(document.getElementById('inp-crypto').value),
-                us_rate: Number(document.getElementById('inp-rate').value),
-                note: document.getElementById('inp-note').value
+                date: document.getElementById('inp-date').value, owner: document.getElementById('inp-owner').value,
+                cash_tdcc: Number(document.getElementById('inp-cash-tdcc').value), cash_cathay: Number(document.getElementById('inp-cash-cathay').value), cash_bot: Number(document.getElementById('inp-cash-bot').value),
+                funds_tdcc: Number(document.getElementById('inp-funds').value), tw_tdcc: Number(document.getElementById('inp-stock-tw').value), tw_lending: Number(document.getElementById('inp-stock-lending').value),
+                us_cathay: Number(document.getElementById('inp-stock-us-cathay').value), us_schwab: Number(document.getElementById('inp-stock-us-schwab').value), crypto: Number(document.getElementById('inp-crypto').value),
+                us_rate: Number(document.getElementById('inp-rate').value), note: document.getElementById('inp-note').value
              };
-             try {
-                 await addDoc(collection(db, "users", auth.currentUser.uid, "records"), r);
-                 window.closeModal();
-                 btn.textContent = '儲存紀錄';
-                 document.querySelectorAll('.input-lively').forEach(i=>i.value='');
-             } catch (e) { console.error(e); alert("儲存失敗"); btn.textContent = '儲存紀錄'; }
+             try { await addDoc(collection(db, "users", auth.currentUser.uid, "records"), r); window.closeModal(); btn.textContent = '儲存紀錄'; document.querySelectorAll('.input-lively').forEach(i=>i.value=''); } catch (e) { console.error(e); alert("儲存失敗"); btn.textContent = '儲存紀錄'; }
         };
 
-        // --- Data Processing ---
         function parseFamilySettings() {
              let membersStr = String(rawSettings.familyMembers || "本人"); familyMembers = membersStr.split(',').map(s => s.trim());
              let cashArr = String(rawSettings.initialCashCost||"0").split(',').map(Number);
@@ -464,9 +394,7 @@
             let targetInvestCost = 0, targetCashCost = 0, targetMonthly = 0, targetRetireAge = 60, targetLifeExpectancy = 90;
 
             if (selectedMember === 'all') {
-                Object.values(memberSettings).forEach(c => {
-                    targetInvestCost += c.initialInvest; targetCashCost += c.initialCash; targetMonthly += c.monthly; targetRetireAge += c.retireAge; targetLifeExpectancy = Math.max(targetLifeExpectancy, c.lifeExpectancy);
-                });
+                Object.values(memberSettings).forEach(c => { targetInvestCost += c.initialInvest; targetCashCost += c.initialCash; targetMonthly += c.monthly; targetRetireAge += c.retireAge; targetLifeExpectancy = Math.max(targetLifeExpectancy, c.lifeExpectancy); });
                 targetRetireAge = Math.round(targetRetireAge / Math.max(1, familyMembers.length)); 
                 filteredRecords = aggregateRecordsByDate(rawRecords, targetInvestCost, targetCashCost, targetMonthly);
                 document.getElementById('roi-note').textContent = "*全體總和成本";
@@ -478,11 +406,9 @@
                 processSingleMemberData(filteredRecords, targetInvestCost, targetCashCost, targetMonthly);
                 document.getElementById('roi-note').textContent = `*${selectedMember} 專屬成本`;
             }
-
             document.getElementById('retire-monthly').value = Math.round(targetMonthly);
             document.getElementById('retire-age-target').value = targetRetireAge;
             document.getElementById('retire-life-expectancy').value = targetLifeExpectancy;
-
             calculateYTD(filteredRecords);
             currentPage = 1;
             renderOverview();
@@ -510,13 +436,11 @@
             const p = latest._totalProfit;
             document.getElementById('val-total-profit').textContent = (p>0?"+":"")+formatMoney(p);
             document.getElementById('val-total-profit-color').className = p>=0?"text-xs font-medium text-emerald-500 privacy-val":"text-xs font-medium text-rose-500 privacy-val";
-            
             document.getElementById('val-invest-roi').textContent = (latest._ytdInvestROI>0?"+":"")+latest._ytdInvestROI.toFixed(1)+"%";
             document.getElementById('bar-invest-roi').style.width = Math.min(Math.abs(latest._ytdInvestROI), 100)+"%";
             document.getElementById('val-total-roi').textContent = (latest._ytdTotalROI>0?"+":"")+latest._ytdTotalROI.toFixed(1)+"%";
             document.getElementById('bar-total-roi').style.width = Math.min(Math.abs(latest._ytdTotalROI), 100)+"%";
             document.getElementById('val-latest-rate-card').textContent = "USD: "+(latest.us_rate||31);
-
             updateAnnualGoal(latest);
             renderFireProgressBar(latest); 
             renderTable();
@@ -559,11 +483,11 @@
             let percent = (current / goal) * 100; if (percent > 100) percent = 100;
             document.getElementById('fire-percent').textContent = percent.toFixed(1) + "%";
             document.getElementById('fire-bar').style.width = percent + "%";
-            if (current >= goal) { document.getElementById('fire-prediction').innerHTML = "<span class='text-emerald-300 font-bold'>已達成財務自由！🎉</span>"; } 
+            if (current >= goal) { document.getElementById('fire-prediction').innerHTML = "<span class='text-emerald-300 font-bold'>已達成！🎉</span>"; } 
             else {
                 let tempAmount = current; let monthsToGo = 0; let maxMonths = 1200; 
                 while (tempAmount < goal && monthsToGo < maxMonths) { tempAmount = tempAmount * (1 + monthlyRate) + monthlyContrib; monthsToGo++; }
-                if (monthsToGo >= maxMonths) { document.getElementById('fire-prediction').innerHTML = "達成時間：<span class='text-sm'>遙遙無期</span>"; } 
+                if (monthsToGo >= maxMonths) { document.getElementById('fire-prediction').innerHTML = "遙遙無期"; } 
                 else { const today = new Date(); const targetDate = new Date(today.getFullYear(), today.getMonth() + monthsToGo, today.getDate()); document.getElementById('fire-prediction').innerHTML = `預計 <span class="text-white font-bold text-lg">${targetDate.getFullYear()}年 ${targetDate.getMonth() + 1}月</span> 達成`; }
             }
         }
