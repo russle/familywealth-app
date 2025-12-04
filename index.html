@@ -6,7 +6,7 @@
     <title>MyWealth - 家庭資產管家</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
+    <!-- Chart.js & Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/2.2.1/chartjs-plugin-annotation.min.js"></script>
@@ -25,6 +25,7 @@
         .lively-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border-color: #e2e8f0; }
         .input-lively { width: 100%; border: 2px solid #f1f5f9; border-radius: 1rem; padding: 0.6rem 1rem; font-weight: 600; color: #334155; transition: all 0.2s; background-color: #f8fafc; }
         .input-lively:focus { outline: none; background-color: white; border-color: #818cf8; box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.1); }
+        .input-lively:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
         body.privacy-mode .privacy-val { filter: blur(8px); opacity: 0.6; user-select: none; transition: all 0.3s ease; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -37,21 +38,21 @@
 </head>
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden bg-slate-50">
 
-    <!-- Login Screen -->
+    <!-- Login Overlay -->
     <div id="login-overlay">
         <div class="text-center mb-8 animate-enter">
             <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center text-white text-4xl shadow-xl mx-auto mb-4 shadow-indigo-500/30"><i class="fa-solid fa-shield-cat"></i></div>
             <h1 class="text-3xl font-bold text-slate-800 mb-2">MyWealth</h1>
-            <p class="text-slate-500">家庭資產管家 (v3.0)</p>
+            <p class="text-slate-500">家庭資產管家 (Firebase版)</p>
         </div>
         <div class="space-y-4 w-full max-w-xs animate-enter" style="animation-delay: 0.1s">
              <button onclick="window.loginWithGoogle()" class="w-full bg-white border border-slate-200 px-6 py-3 rounded-xl font-bold text-slate-700 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all flex items-center justify-center gap-3">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5"> Google 登入
             </button>
+             <div id="login-status" class="text-xs text-center text-red-500 font-mono break-words px-2"></div>
              <div id="config-status" class="text-xs text-center font-mono bg-slate-100 p-2 rounded text-slate-500">
                  正在檢查設定...
              </div>
-             <div id="login-error" class="text-xs text-center text-red-500 font-bold hidden"></div>
         </div>
     </div>
 
@@ -86,6 +87,7 @@
         </div>
     </header>
 
+    <!-- Main Content -->
     <main id="app-main" class="flex-grow overflow-y-auto custom-scrollbar p-4 sm:p-6 relative hidden">
         <div class="max-w-7xl mx-auto space-y-8 pb-12">
             
@@ -95,7 +97,7 @@
                     <div class="p-3 bg-blue-100 rounded-full text-blue-600"><i class="fa-solid fa-file-csv text-xl"></i></div>
                     <div class="flex-grow">
                         <h3 class="font-bold text-blue-800 text-lg mb-1">初始化資料庫</h3>
-                        <p class="text-sm text-blue-600 mb-4">檢測到您的資料庫為空。請選擇 <strong>Records.csv</strong> 以匯入舊資料。</p>
+                        <p class="text-sm text-blue-600 mb-4">檢測到您的資料庫為空。請選擇您的 <strong>Records.csv</strong> 檔案以匯入舊資料。</p>
                         <input type="file" id="csv-file-input" accept=".csv" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"/>
                     </div>
                 </div>
@@ -109,6 +111,7 @@
 
             <!-- Overview View -->
             <div id="view-overview" class="hidden space-y-6 animate-enter">
+                <!-- 1. KPI Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div class="lively-card p-6 relative overflow-hidden group md:col-span-2">
                         <div class="relative z-10">
@@ -116,18 +119,19 @@
                             <h3 class="text-3xl font-bold font-poppins text-slate-800 tracking-tight privacy-val" id="val-total-assets">---</h3>
                             <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between text-xs font-medium text-slate-500"><span>成本: <span id="val-total-cost" class="font-poppins privacy-val">---</span></span><span id="val-total-profit-color">損益: <span id="val-total-profit" class="font-poppins privacy-val">---</span></span></div>
                         </div>
+                        <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-indigo-50 rounded-full opacity-50 group-hover:scale-125 transition-transform duration-500"></div>
                     </div>
                     <div class="lively-card p-6 relative overflow-hidden group border-0 ring-2 ring-slate-100">
                         <div class="relative z-10">
                             <div class="flex items-center gap-2 mb-2"><p class="text-slate-500 text-xs font-bold uppercase tracking-wider">總資產成長 (YTD)</p></div>
                             <h3 class="text-2xl font-bold font-poppins tracking-tight text-slate-700" id="val-total-roi">---%</h3>
                             <div class="mt-4 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden relative"><div id="bar-total-roi" class="absolute top-0 left-0 h-full bg-slate-400 rounded-full transition-all duration-1000" style="width: 0%"></div></div>
-                            <p class="mt-2 text-[10px] text-slate-400 text-right font-medium opacity-80">資產變動率</p>
+                            <p class="mt-2 text-[10px] text-slate-400 text-right font-medium">資產變動率</p>
                         </div>
                     </div>
                     <div class="lively-card p-0 relative overflow-hidden group border-0 ring-4 ring-indigo-50 ring-offset-2">
+                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-700"></div>
                         <div class="relative z-10 p-6 text-white">
-                            <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-700 -z-10"></div>
                             <div class="flex items-center gap-2 mb-2"><p class="text-indigo-100 text-xs font-bold uppercase tracking-wider">投資成長 (YTD)</p></div>
                             <h3 class="text-2xl font-bold font-poppins tracking-tight" id="val-invest-roi">---%</h3>
                             <div class="mt-4 relative h-1.5 w-full bg-white/20 rounded-full overflow-hidden backdrop-blur-sm"><div id="bar-invest-roi" class="absolute top-0 left-0 h-full bg-white rounded-full transition-all duration-1000" style="width: 0%"></div></div>
@@ -136,6 +140,7 @@
                     </div>
                 </div>
                 
+                <!-- 2. FIRE & Goal -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="lively-card p-6 bg-gradient-to-r from-slate-800 to-indigo-900 text-white relative overflow-hidden border-0 shadow-xl shadow-indigo-900/20">
                         <div class="relative z-10">
@@ -157,6 +162,7 @@
                     </div>
                 </div>
 
+                <!-- 3. Charts -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 lively-card p-6">
                         <div class="flex items-center justify-between mb-6"><h3 class="font-bold text-slate-700 flex items-center gap-2"><span class="w-1.5 h-6 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></span> 資產趨勢</h3><div class="text-xs bg-slate-100 px-3 py-1.5 rounded-lg text-slate-500 font-bold flex items-center gap-1"><i class="fa-solid fa-dollar-sign text-xs"></i> <span id="val-latest-rate-card">--</span></div></div>
@@ -168,10 +174,11 @@
                     </div>
                 </div>
 
+                <!-- 4. Table -->
                 <div class="lively-card overflow-hidden flex flex-col">
                     <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                         <h3 class="font-bold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-slate-400"></i> 歷史紀錄</h3>
-                        <button onclick="window.openModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg transition-all flex items-center gap-2 transform hover:scale-105"><i class="fa-solid fa-plus"></i> 新增紀錄</button>
+                        <button onclick="window.openModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-slate-200 transition-all flex items-center gap-2 transform hover:scale-105"><i class="fa-solid fa-plus"></i> 新增紀錄</button>
                     </div>
                     <div class="overflow-x-auto flex-grow"><table class="min-w-full divide-y divide-slate-100"><thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold tracking-wider"><tr><th class="px-6 py-4 text-left">日期</th><th class="px-6 py-4 text-left">成員</th><th class="px-6 py-4 text-right">總資產</th><th class="px-6 py-4 text-right text-indigo-500">成本</th><th class="px-6 py-4 text-center">總YTD</th><th class="px-6 py-4 text-center">投資YTD</th><th class="px-6 py-4 text-left">備註</th></tr></thead><tbody class="bg-white divide-y divide-slate-50 text-sm font-medium" id="table-body"></tbody></table></div>
                     <div class="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center"><span class="text-xs text-slate-500 font-bold" id="pagination-info">Page 1</span><div class="flex gap-2"><button onclick="window.changePage(-1)" id="btn-prev" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold hover:bg-slate-50 disabled:opacity-50 transition-colors">Prev</button><button onclick="window.changePage(1)" id="btn-next" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold hover:bg-slate-50 disabled:opacity-50 transition-colors">Next</button></div></div>
@@ -463,7 +470,7 @@
             calculateYTD(filteredRecords);
             currentPage = 1;
             renderOverview();
-            initRetirementInputs(); 
+            window.initRetirementInputs(); 
             renderFireProgressBar(filteredRecords.length > 0 ? filteredRecords[filteredRecords.length - 1] : null);
         };
 
@@ -595,62 +602,14 @@
             });
         }
 
-        window.calcRetirement = function() {
-            const current = parseFloat(document.getElementById('retire-current').value.replace(/,/g,''))||0;
-            const monthlyContrib = parseFloat(document.getElementById('retire-monthly').value) || 0;
-            const rate = parseFloat(document.getElementById('retire-rate').value)/100;
-            const inflation = parseFloat(document.getElementById('retire-inflation').value)/100;
-            const currentAge = parseInt(document.getElementById('retire-age').value) || 30;
-            const targetAge = parseInt(document.getElementById('retire-age-target').value) || 60;
-            const targetLifeExpectancy = parseInt(document.getElementById('retire-life-expectancy').value) || 90;
-            const goal = parseFloat(document.getElementById('retire-goal').value) || 0;
-
-            let fv = current; let dataNominal=[current]; let labels=[currentAge+'歲'];
-            let low = 0, high = 1000000; let optimalWithdrawal = 0;
-            
-            for(let iter=0; iter<20; iter++) { 
-                let mid = (low + high) / 2; let balance = current; let ok = true;
-                for(let age = currentAge + 1; age <= targetLifeExpectancy; age++) {
-                     if (age <= targetAge) { for(let m=0; m<12; m++) balance = (balance + monthlyContrib) * (1 + rate/12); } 
-                     else {
-                        let yearsPassed = age - targetAge; 
-                        let monthlyWithInflation = mid * Math.pow(1 + inflation, yearsPassed);
-                        for(let m=0; m<12; m++) balance = balance * (1 + rate/12) - monthlyWithInflation;
-                     }
-                     if (balance < 0) { ok = false; break; }
-                }
-                if (ok) { optimalWithdrawal = mid; low = mid; } else { high = mid; }
-            }
-            
-            fv = current; dataNominal = [current]; labels = [currentAge+'歲'];
-            let runOutAge = null; let retireAsset = 0;
-
-            for(let age = currentAge + 1; age <= 100; age++) { 
-                if (age <= targetAge) { for(let m=0; m<12; m++) fv = (fv + monthlyContrib) * (1 + rate/12); } 
-                else {
-                    let yearsPassed = age - targetAge;
-                    let monthlyWithInflation = optimalWithdrawal * Math.pow(1 + inflation, yearsPassed);
-                    for(let m=0; m<12; m++) fv = fv * (1 + rate/12) - monthlyWithInflation;
-                }
-                if (fv < 0) { fv = 0; if(!runOutAge) runOutAge = age; }
-                if (age === targetAge) retireAsset = fv;
-                dataNominal.push(Math.round(fv)); labels.push(age+'歲');
-            }
-
-            document.getElementById('retire-monthly-withdraw-display').textContent = formatMoney(Math.round(optimalWithdrawal)) + " 元";
-            document.getElementById('retire-result-out').textContent = `${targetLifeExpectancy} 歲歸零`;
-            document.getElementById('val-at-retire').textContent = formatMoney(Math.round(retireAsset));
-            
-            const statusBadge = document.getElementById('retire-status-badge');
-            statusBadge.innerHTML = '<i class="fa-solid fa-check-circle text-emerald-500"></i> <span class="text-emerald-600">試算完成</span>';
-            statusBadge.className = "px-4 py-2 rounded-xl bg-emerald-50 font-bold text-sm flex items-center gap-2";
-
-            const ctx = document.getElementById('chart-retirement').getContext('2d');
-            if(charts.retire) charts.retire.destroy();
-            charts.retire = new Chart(ctx, {
-                type:'line', data:{labels:labels, datasets:[{label:'名目資產', data:dataNominal, borderColor:'#6366f1', backgroundColor:(ctx)=>{const c=ctx.chart.ctx;const g=c.createLinearGradient(0,0,0,300);g.addColorStop(0,'rgba(99,102,241,0.5)');g.addColorStop(1,'rgba(99,102,241,0)');return g}, fill:true, pointRadius:0, borderWidth:2}]},
-                options:{responsive:true, maintainAspectRatio:false, scales:{y:{ticks:{callback:v=>(v/10000).toFixed(0)+'萬'}}}, interaction:{mode:'index', intersect:false}, plugins:{annotation:{annotations:{line1:{type:'line',xMin:targetAge-currentAge,xMax:targetAge-currentAge,borderColor:'rgb(255,99,132)',borderWidth:2,label:{content:'退休',enabled:true,position:'start'}}}}}}
-            });
+        window.initRetirementInputs = function() {
+            const latest = filteredRecords.length > 0 ? filteredRecords[filteredRecords.length-1]._totalAssets : 0;
+            document.getElementById('retire-current').value = formatMoney(latest);
+            if(rawSettings.retirementGoal) document.getElementById('retire-goal').value = rawSettings.retirementGoal;
+            if(rawSettings.expectedReturn) { let r = rawSettings.expectedReturn; if(r < 1) r = r * 100; document.getElementById('retire-rate').value = r; }
+            if(rawSettings.inflationRate) document.getElementById('retire-inflation').value = rawSettings.inflationRate;
+            if(rawSettings.currentAge) document.getElementById('retire-age').value = rawSettings.currentAge;
+            window.calcRetirement();
         }
 
         function formatMoney(num) { return new Intl.NumberFormat('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}).format(num); }
